@@ -1,0 +1,9 @@
+# Development
+src/
+node_modules/
+test/
+
+# Config
+eslint.config.mjs
+tsconfig.json
+tsup.config.ts
