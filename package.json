@@ -8,6 +8,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sercrac07/tyrun"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest",
