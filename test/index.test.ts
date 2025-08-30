@@ -171,3 +171,24 @@ describe('enum', () => {
     expect(t.enum(['Hello', 'World'] as const).parse(['Hello'])).toEqual(generateError('Value must be one from the options: Hello, World'))
   })
 })
+
+describe('record', () => {
+  it('should be defined', () => {
+    expect(t.record).toBeDefined()
+  })
+
+  it('should parse', () => {
+    expect(t.record(t.number()).parse({ name: 1, age: 18 })).toEqual(generateSuccess({ name: 1, age: 18 }))
+    expect(t.record(t.number()).optional().parse(undefined)).toEqual(generateSuccess(undefined))
+    expect(t.record(t.number()).nullable().parse(null)).toEqual(generateSuccess(null))
+    expect(t.record(t.number()).nullish().parse(null)).toEqual(generateSuccess(null))
+  })
+
+  it("shouldn't parse", () => {
+    expect(t.record(t.number()).parse('{"name":1,"age":18}')).toEqual(generateError('Value must be an object'))
+    expect(t.record(t.number()).parse(1)).toEqual(generateError('Value must be an object'))
+    expect(t.record(t.number()).parse(false)).toEqual(generateError('Value must be an object'))
+    expect(t.record(t.number()).parse({ name: 'Hello' })).toEqual(generateError('Value must be a string'))
+    expect(t.record(t.number()).parse([1, 18])).toEqual(generateError('Value must be an object'))
+  })
+})
