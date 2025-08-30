@@ -8,7 +8,7 @@ export interface T {
   boolean: (message?: string) => TyrunBoolean
   object: <S extends { [key: string]: Tyrun<any> }>(schema: S, message?: string) => TyrunObject<S>
   array: <S extends Tyrun<any>>(schema: S, message?: string) => TyrunArray<S>
-  enum: <S extends readonly (string | number)[]>(schema: S, message?: string) => TyrunEnum<S>
+  enum: <S extends string | number>(schema: S[], message?: string) => TyrunEnum<S>
 }
 
 export interface Tyrun<T> {
@@ -36,7 +36,7 @@ export interface TyrunArray<S extends Tyrun<any>> extends TyrunBase<Infer<S>[]> 
   min(length: number, message?: string): this
   max(length: number, message?: string): this
 }
-export interface TyrunEnum<S extends readonly (string | number)[]> extends TyrunBase<S[number]> {}
+export interface TyrunEnum<S extends string | number> extends TyrunBase<S> {}
 export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Infer<S> | undefined> {
   readonly __isOptional: true
 }
