@@ -1,5 +1,6 @@
 import { ArraySchema } from './array'
 import { BooleanSchema } from './boolean'
+import { EnumSchema } from './enum'
 import { NumberSchema } from './number'
 import { ObjectSchema } from './object'
 import { StringSchema } from './string'
@@ -13,4 +14,5 @@ export const t: T = {
   boolean: message => new BooleanSchema(message),
   object: (schema, message) => new ObjectSchema(schema, message),
   array: (schema, message) => new ArraySchema(schema, message),
+  enum: (schema, message) => new EnumSchema(schema, message),
 }
