@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Infer, t, type ParseResult } from '../src'
+import { t, type ParseResult } from '../src'
 
 const generateSuccess = <T>(data: T): ParseResult<T> => ({ success: true, data })
 const generateError = (...errors: string[]): ParseResult<void> => ({ success: false, errors })
-
-const _a = t.object({})
-type _A = Infer<typeof _a>
 
 describe('string', () => {
   it('should be defined', () => {
@@ -136,5 +133,41 @@ describe('array', () => {
 
     expect(t.array(t.string()).min(3).parse(['1', '2'])).toEqual(generateError('Value must contain at least 3 items'))
     expect(t.array(t.string()).max(1).parse(['1', '2'])).toEqual(generateError('Value must contain at most 1 items'))
+  })
+})
+
+describe('enum', () => {
+  it('should be defined', () => {
+    expect(t.enum).toBeDefined()
+  })
+
+  it('should parse', () => {
+    expect(t.enum(['Hello', 'World'] as const).parse('Hello')).toEqual(generateSuccess('Hello'))
+    expect(
+      t
+        .enum(['Hello', 'World'] as const)
+        .optional()
+        .parse(undefined)
+    ).toEqual(generateSuccess(undefined))
+    expect(
+      t
+        .enum(['Hello', 'World'] as const)
+        .nullable()
+        .parse(null)
+    ).toEqual(generateSuccess(null))
+    expect(
+      t
+        .enum(['Hello', 'World'] as const)
+        .nullish()
+        .parse(undefined)
+    ).toEqual(generateSuccess(undefined))
+  })
+
+  it("shouldn't parse", () => {
+    expect(t.enum(['Hello', 'World'] as const).parse('Hello World!')).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World'] as const).parse(1)).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World'] as const).parse(false)).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World'] as const).parse({ Hello: 'World' })).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World'] as const).parse(['Hello'])).toEqual(generateError('Value must be one from the options: Hello, World'))
   })
 })
