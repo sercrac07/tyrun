@@ -6,6 +6,7 @@ import { ObjectSchema } from './object'
 import { RecordSchema } from './record'
 import { StringSchema } from './string'
 import type { T } from './types'
+import { UnionSchema } from './union'
 
 export type { Infer, ParseResult } from './types'
 
@@ -17,4 +18,5 @@ export const t: T = {
   array: (schema, message) => new ArraySchema(schema, message),
   enum: (schema, message) => new EnumSchema(schema, message),
   record: (schema, message) => new RecordSchema(schema, message),
+  union: schemas => new UnionSchema(schemas),
 }

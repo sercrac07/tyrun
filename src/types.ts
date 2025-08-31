@@ -10,6 +10,7 @@ export interface T {
   array: <S extends Tyrun<any>>(schema: S, message?: string) => TyrunArray<S>
   enum: <S extends string | number>(schema: S[], message?: string) => TyrunEnum<S>
   record: <S extends Tyrun<any>>(schema: S, message?: string) => TyrunRecord<S>
+  union: <S extends Tyrun<any>>(schemas: S[]) => TyrunUnion<S>
 }
 
 export interface Tyrun<T> {
@@ -39,6 +40,7 @@ export interface TyrunArray<S extends Tyrun<any>> extends TyrunBase<Infer<S>[]> 
 }
 export interface TyrunEnum<S extends string | number> extends TyrunBase<S> {}
 export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: string]: Infer<S> }> {}
+export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Infer<S>> {}
 export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Infer<S> | undefined> {
   readonly __isOptional: true
 }
