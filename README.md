@@ -27,15 +27,14 @@ bun add tyrun
 import { t } from 'tyrun'
 
 // Define your schema
-const stringSchema = t.string().min(3).max(20)
+const usernameSchema = t
+  .string()
+  .min(3)
+  .max(20)
+  .regex(/^[^\s]+$/)
 
 // Check your data
-try {
-  stringSchema.parse('This is valid') // Passes
-  stringSchema.parse(123) // Throws an error
-} catch (error) {
-  console.error('Validation error:', error)
-}
+const usernameSafe = usernameSchema.parse('hello-world')
 
 if (usernameSafe.success) {
   console.log(usernameSafe.data)
