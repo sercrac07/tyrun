@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { Infer, t, type ParseResult } from '../src'
+import { t, type ParseResult } from '../src'
 
 const generateSuccess = <T>(data: T): ParseResult<T> => ({ success: true, data })
 const generateError = (...errors: string[]): ParseResult<void> => ({ success: false, errors })
-
-const _a = t.union([t.array(t.boolean()), t.enum([1, 2] as const)])
-type _A = Infer<typeof _a>
 
 describe('string', () => {
   it('should be defined', () => {
@@ -103,6 +100,8 @@ describe('object', () => {
     expect(t.object({ name: t.string(), age: t.number() }).optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.object({ name: t.string(), age: t.number() }).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.object({ name: t.string(), age: t.number() }).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
+
+    expect(t.object({ name: t.string(), age: t.number() }).inner.name.parse('John')).toEqual(generateSuccess('John'))
   })
 
   it("shouldn't parse", () => {
@@ -126,6 +125,7 @@ describe('array', () => {
 
     expect(t.array(t.string()).min(2).parse(['1', '2'])).toEqual(generateSuccess(['1', '2']))
     expect(t.array(t.string()).max(2).parse(['1', '2'])).toEqual(generateSuccess(['1', '2']))
+    expect(t.array(t.string()).inner.parse('Hello')).toEqual(generateSuccess('Hello'))
   })
 
   it("shouldn't parse", () => {
@@ -145,33 +145,20 @@ describe('enum', () => {
   })
 
   it('should parse', () => {
-    expect(t.enum(['Hello', 'World'] as const).parse('Hello')).toEqual(generateSuccess('Hello'))
-    expect(
-      t
-        .enum(['Hello', 'World'] as const)
-        .optional()
-        .parse(undefined)
-    ).toEqual(generateSuccess(undefined))
-    expect(
-      t
-        .enum(['Hello', 'World'] as const)
-        .nullable()
-        .parse(null)
-    ).toEqual(generateSuccess(null))
-    expect(
-      t
-        .enum(['Hello', 'World'] as const)
-        .nullish()
-        .parse(undefined)
-    ).toEqual(generateSuccess(undefined))
+    expect(t.enum(['Hello', 'World']).parse('Hello')).toEqual(generateSuccess('Hello'))
+    expect(t.enum(['Hello', 'World']).optional().parse(undefined)).toEqual(generateSuccess(undefined))
+    expect(t.enum(['Hello', 'World']).nullable().parse(null)).toEqual(generateSuccess(null))
+    expect(t.enum(['Hello', 'World']).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
+
+    expect(t.enum(['Hello', 'World']).values).toEqual(['Hello', 'World'])
   })
 
   it("shouldn't parse", () => {
-    expect(t.enum(['Hello', 'World'] as const).parse('Hello World!')).toEqual(generateError('Value must be one from the options: Hello, World'))
-    expect(t.enum(['Hello', 'World'] as const).parse(1)).toEqual(generateError('Value must be one from the options: Hello, World'))
-    expect(t.enum(['Hello', 'World'] as const).parse(false)).toEqual(generateError('Value must be one from the options: Hello, World'))
-    expect(t.enum(['Hello', 'World'] as const).parse({ Hello: 'World' })).toEqual(generateError('Value must be one from the options: Hello, World'))
-    expect(t.enum(['Hello', 'World'] as const).parse(['Hello'])).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World']).parse('Hello World!')).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World']).parse(1)).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World']).parse(false)).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World']).parse({ Hello: 'World' })).toEqual(generateError('Value must be one from the options: Hello, World'))
+    expect(t.enum(['Hello', 'World']).parse(['Hello'])).toEqual(generateError('Value must be one from the options: Hello, World'))
   })
 })
 
@@ -185,6 +172,8 @@ describe('record', () => {
     expect(t.record(t.number()).optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.record(t.number()).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.record(t.number()).nullish().parse(null)).toEqual(generateSuccess(null))
+
+    expect(t.record(t.number()).inner.parse(18)).toEqual(generateSuccess(18))
   })
 
   it("shouldn't parse", () => {
