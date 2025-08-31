@@ -3,6 +3,7 @@ import { BooleanSchema } from './boolean'
 import { EnumSchema } from './enum'
 import { NumberSchema } from './number'
 import { ObjectSchema } from './object'
+import { RecordSchema } from './record'
 import { StringSchema } from './string'
 import type { T } from './types'
 
@@ -15,4 +16,5 @@ export const t: T = {
   object: (schema, message) => new ObjectSchema(schema, message),
   array: (schema, message) => new ArraySchema(schema, message),
   enum: (schema, message) => new EnumSchema(schema, message),
+  record: (schema, message) => new RecordSchema(schema, message),
 }
