@@ -33,13 +33,20 @@ export interface TyrunNumber extends TyrunBase<number> {
   max(amount: number, message?: string): this
 }
 export interface TyrunBoolean extends TyrunBase<boolean> {}
-export interface TyrunObject<S extends { [key: string]: Tyrun<any> }> extends TyrunBase<TypeFromShape<S>> {}
+export interface TyrunObject<S extends { [key: string]: Tyrun<any> }> extends TyrunBase<TypeFromShape<S>> {
+  inner: S
+}
 export interface TyrunArray<S extends Tyrun<any>> extends TyrunBase<Infer<S>[]> {
   min(length: number, message?: string): this
   max(length: number, message?: string): this
+  inner: S
 }
-export interface TyrunEnum<S extends string | number> extends TyrunBase<S> {}
-export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: string]: Infer<S> }> {}
+export interface TyrunEnum<S extends string | number> extends TyrunBase<S> {
+  values: S[]
+}
+export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: string]: Infer<S> }> {
+  inner: S
+}
 export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Infer<S>> {}
 export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Infer<S> | undefined> {
   readonly __isOptional: true

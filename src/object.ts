@@ -2,8 +2,11 @@ import { BaseSchema } from './base'
 import type { ParseResult, TypeFromShape, Tyrun, TyrunObject } from './types'
 
 export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseSchema<TypeFromShape<S>> implements TyrunObject<S> {
+  public inner: S
+
   constructor(private schema: S, private message: string = 'Value must be an object') {
     super()
+    this.inner = schema
   }
 
   override parse(value: unknown): ParseResult<TypeFromShape<S>> {
