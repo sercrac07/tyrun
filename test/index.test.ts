@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { t, type ParseResult } from '../src'
+import { Infer, t, type ParseResult } from '../src'
 
 const generateSuccess = <T>(data: T): ParseResult<T> => ({ success: true, data })
 const generateError = (...errors: string[]): ParseResult<void> => ({ success: false, errors })
+
+const _a = t.union([t.array(t.boolean()), t.enum([1, 2] as const)])
+type _A = Infer<typeof _a>
 
 describe('string', () => {
   it('should be defined', () => {
@@ -190,5 +193,25 @@ describe('record', () => {
     expect(t.record(t.number()).parse(false)).toEqual(generateError('Value must be an object'))
     expect(t.record(t.number()).parse({ name: 'Hello' })).toEqual(generateError('Value must be a number'))
     expect(t.record(t.number()).parse([1, 18])).toEqual(generateError('Value must be an object'))
+  })
+})
+
+describe('union', () => {
+  it('should be defined', () => {
+    expect(t.union).toBeDefined()
+  })
+
+  it('should parse', () => {
+    expect(t.union([t.string(), t.number()]).parse('Hello')).toEqual(generateSuccess('Hello'))
+    expect(t.union([t.string(), t.number()]).parse(18)).toEqual(generateSuccess(18))
+    expect(t.union([t.string(), t.number()]).optional().parse(undefined)).toEqual(generateSuccess(undefined))
+    expect(t.union([t.string(), t.number()]).nullable().parse(null)).toEqual(generateSuccess(null))
+    expect(t.union([t.string(), t.number()]).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
+  })
+
+  it("shouldn't parse", () => {
+    expect(t.union([t.string(), t.number()]).parse(true)).toEqual(generateError('Value must be a string', 'Value must be a number'))
+    expect(t.union([t.string(), t.number()]).parse({ hello: 18 })).toEqual(generateError('Value must be a string', 'Value must be a number'))
+    expect(t.union([t.string(), t.number()]).parse(['Hello', 18])).toEqual(generateError('Value must be a string', 'Value must be a number'))
   })
 })
