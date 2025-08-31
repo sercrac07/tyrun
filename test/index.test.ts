@@ -188,7 +188,7 @@ describe('record', () => {
     expect(t.record(t.number()).parse('{"name":1,"age":18}')).toEqual(generateError('Value must be an object'))
     expect(t.record(t.number()).parse(1)).toEqual(generateError('Value must be an object'))
     expect(t.record(t.number()).parse(false)).toEqual(generateError('Value must be an object'))
-    expect(t.record(t.number()).parse({ name: 'Hello' })).toEqual(generateError('Value must be a string'))
+    expect(t.record(t.number()).parse({ name: 'Hello' })).toEqual(generateError('Value must be a number'))
     expect(t.record(t.number()).parse([1, 18])).toEqual(generateError('Value must be an object'))
   })
 })
