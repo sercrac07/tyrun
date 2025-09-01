@@ -1,6 +1,7 @@
-import type { Infer, ParseResult, Tyrun, TyrunNullish } from './types'
+import type { Infer, ParseResult, Tyrun, TyrunMeta, TyrunNullish } from './types'
 
 export class NullishSchema<S extends Tyrun<any>> implements TyrunNullish<S> {
+  meta: TyrunMeta = { name: null, description: null }
   readonly __isOptional = true
 
   constructor(private schema: S) {}

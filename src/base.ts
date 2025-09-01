@@ -1,9 +1,10 @@
 import { NullableSchema } from './nullable'
 import { NullishSchema } from './nullish'
 import { OptionalSchema } from './optional'
-import type { ParseResult, TyrunBase, TyrunNullable, TyrunNullish, TyrunOptional } from './types'
+import type { ParseResult, TyrunBase, TyrunMeta, TyrunNullable, TyrunNullish, TyrunOptional } from './types'
 
 export class BaseSchema<T> implements TyrunBase<T> {
+  meta: TyrunMeta = { name: null, description: null }
   protected validators: ((value: T) => null | string)[] = []
 
   protected runValidators(value: T) {
@@ -22,12 +23,27 @@ export class BaseSchema<T> implements TyrunBase<T> {
   }
 
   optional(): TyrunOptional<this> {
-    return new OptionalSchema(this)
+    const schema = new OptionalSchema(this)
+    schema.meta = this.meta
+    return schema
   }
   nullable(): TyrunNullable<this> {
-    return new NullableSchema(this)
+    const schema = new NullableSchema(this)
+    schema.meta = this.meta
+    return schema
   }
   nullish(): TyrunNullish<this> {
-    return new NullishSchema(this)
+    const schema = new NullishSchema(this)
+    schema.meta = this.meta
+    return schema
+  }
+
+  name(name: string) {
+    this.meta.name = name
+    return this
+  }
+  description(description: string) {
+    this.meta.description = description
+    return this
   }
 }

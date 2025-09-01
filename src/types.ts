@@ -14,13 +14,21 @@ export interface T {
 }
 
 export interface Tyrun<T> {
+  meta: TyrunMeta
   parse(value: unknown): ParseResult<T>
+}
+
+export interface TyrunMeta {
+  name: string | null
+  description: string | null
 }
 
 export interface TyrunBase<T> extends Tyrun<T> {
   optional(): TyrunOptional<this>
   nullable(): TyrunNullable<this>
   nullish(): TyrunNullish<this>
+  name(name: string): this
+  description(description: string): this
 }
 
 export interface TyrunString extends TyrunBase<string> {

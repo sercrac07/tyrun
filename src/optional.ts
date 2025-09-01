@@ -1,6 +1,7 @@
-import type { Infer, ParseResult, Tyrun, TyrunOptional } from './types'
+import type { Infer, ParseResult, Tyrun, TyrunMeta, TyrunOptional } from './types'
 
 export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
+  meta: TyrunMeta = { name: null, description: null }
   readonly __isOptional = true
 
   constructor(private schema: S) {}
