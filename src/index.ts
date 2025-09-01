@@ -8,7 +8,7 @@ import { StringSchema } from './string'
 import type { T } from './types'
 import { UnionSchema } from './union'
 
-export type { Infer, ParseResult } from './types'
+export type * as T from './types'
 
 export const t: T = {
   string: message => new StringSchema(message),

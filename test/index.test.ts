@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { t, type ParseResult } from '../src'
+import { t, type T } from '../src'
 
-const generateSuccess = <T>(data: T): ParseResult<T> => ({ success: true, data })
-const generateError = (...errors: string[]): ParseResult<void> => ({ success: false, errors })
+const generateSuccess = <T>(data: T): T.ParseResult<T> => ({ success: true, data })
+const generateError = (...errors: string[]): T.ParseResult<void> => ({ success: false, errors })
 
 describe('string', () => {
   it('should be defined', () => {
