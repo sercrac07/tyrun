@@ -26,12 +26,12 @@ export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Infer<S>[]> im
     return { success: true, data: output }
   }
 
-  min(length: number, message: string = `Value must contain at least ${length} items`): this {
+  public min(length: number, message: string = `Value must contain at least ${length} items`): this {
     this.validators.push(v => (v.length >= length ? null : message))
     return this
   }
 
-  max(length: number, message: string = `Value must contain at most ${length} items`): this {
+  public max(length: number, message: string = `Value must contain at most ${length} items`): this {
     this.validators.push(v => (v.length <= length ? null : message))
     return this
   }

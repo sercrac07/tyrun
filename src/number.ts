@@ -14,12 +14,12 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
     return { success: true, data: value }
   }
 
-  min(amount: number, message: string = `Value must be greater or equal than ${amount}`): this {
+  public min(amount: number, message: string = `Value must be greater or equal than ${amount}`): this {
     this.validators.push(v => (v >= amount ? null : message))
     return this
   }
 
-  max(amount: number, message: string = `Value must be lower or equal than ${amount}`): this {
+  public max(amount: number, message: string = `Value must be lower or equal than ${amount}`): this {
     this.validators.push(v => (v <= amount ? null : message))
     return this
   }

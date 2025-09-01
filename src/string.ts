@@ -14,17 +14,17 @@ export class StringSchema extends BaseSchema<string> implements TyrunString {
     return { success: true, data: value }
   }
 
-  min(length: number, message: string = `Value must be at least ${length} characters long`): this {
+  public min(length: number, message: string = `Value must be at least ${length} characters long`): this {
     this.validators.push(v => (v.length >= length ? null : message))
     return this
   }
 
-  max(length: number, message: string = `Value must be at most ${length} characters long`): this {
+  public max(length: number, message: string = `Value must be at most ${length} characters long`): this {
     this.validators.push(v => (v.length <= length ? null : message))
     return this
   }
 
-  regex(regex: RegExp, message: string = `Value does not match regex: ${regex}`): this {
+  public regex(regex: RegExp, message: string = `Value does not match regex: ${regex}`): this {
     this.validators.push(v => (regex.test(v) ? null : message))
     return this
   }
