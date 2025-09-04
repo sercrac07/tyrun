@@ -33,17 +33,20 @@ export interface TyrunBase<T> extends Tyrun<T> {
 
 export interface TyrunString extends TyrunBase<string> {
   readonly type: 'string'
+  coerce(): this
   min(length: number, message?: string): this
   max(length: number, message?: string): this
   regex(regex: RegExp, message?: string): this
 }
 export interface TyrunNumber extends TyrunBase<number> {
   readonly type: 'number'
+  coerce(): this
   min(amount: number, message?: string): this
   max(amount: number, message?: string): this
 }
 export interface TyrunBoolean extends TyrunBase<boolean> {
   readonly type: 'boolean'
+  coerce(): this
 }
 export interface TyrunObject<S extends { [key: string]: Tyrun<any> }> extends TyrunBase<TypeFromShape<S>> {
   readonly type: 'object'
