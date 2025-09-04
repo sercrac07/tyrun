@@ -88,7 +88,7 @@ export interface TyrunMutation<I extends TyrunBase<any>, O> extends Tyrun<O> {
   readonly inner: I
 }
 
-type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: Flatten<T[K]> } : T
+type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: T[K] } : T
 
 export type Output<S extends Tyrun<any>> = S extends Tyrun<infer T> ? T : never
 export type Input<S extends Tyrun<any>> = S extends TyrunObject<infer Shape>
