@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0 - 2025-09-04
+
+### Added
+
+- `type` property for all validators to store validator type
+- `coerce` method for `string`, `number` and `boolean` validators
+- `refine` method for all validators to add custom validation logic
+- `transform` method for all validators to add custom transformation logic
+- `mutate` method for all validators to add custom mutation logic
+- `T.Input` type to get input type for validator
+
+### Changed
+
+- Refactor classes to explicitily mark public methods
+- Refactor `optional`, `nullable`, `nullish` schemas to inherit from base schema
+- Rename `T.Infer` to `T.Output`
+
 ## 1.5.0 - 2025-09-01
 
 ### Added
