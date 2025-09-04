@@ -78,14 +78,14 @@ export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Infer<S> | nul
   readonly __isOptional: true
 }
 
-type Merge<T extends { [key: string]: any }> = { [K in keyof T]: T[K] }
+type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: Flatten<T[K]> } : T
 
 export type Infer<S extends Tyrun<any>> = S extends Tyrun<infer T> ? T : never
 
-export type TypeFromShape<S extends { [key: string]: Tyrun<any> }> = Merge<
+export type TypeFromShape<S extends { [key: string]: Tyrun<any> }> = Flatten<
   {
-    [K in keyof S as S[K] extends TyrunOptional<any> ? never : K]-?: Infer<S[K]>
+    [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? never : K]-?: Infer<S[K]>
   } & {
-    [K in keyof S as S[K] extends TyrunOptional<any> ? K : never]+?: Exclude<Infer<S[K]>, undefined>
+    [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? K : never]+?: Exclude<Infer<S[K]>, undefined>
   }
 >
