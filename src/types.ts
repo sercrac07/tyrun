@@ -91,11 +91,31 @@ export interface TyrunMutation<I extends TyrunBase<any>, O> extends Tyrun<O> {
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: Flatten<T[K]> } : T
 
 export type Output<S extends Tyrun<any>> = S extends Tyrun<infer T> ? T : never
+export type Input<S extends Tyrun<any>> = S extends TyrunObject<infer Shape>
+  ? TypeFromShapeInput<Shape>
+  : S extends TyrunArray<infer T>
+  ? Input<T>[]
+  : S extends TyrunRecord<infer T>
+  ? { [key: string]: Input<T> }
+  : S extends TyrunMutation<infer I, any>
+  ? Input<I>
+  : S extends TyrunUnion<infer S>
+  ? Input<S>
+  : S extends Tyrun<infer T>
+  ? T
+  : never
 
 export type TypeFromShape<S extends { [key: string]: Tyrun<any> }> = Flatten<
   {
     [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? never : K]-?: Output<S[K]>
   } & {
     [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? K : never]+?: Exclude<Output<S[K]>, undefined>
+  }
+>
+export type TypeFromShapeInput<S extends { [key: string]: Tyrun<any> }> = Flatten<
+  {
+    [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? never : K]-?: Input<S[K]>
+  } & {
+    [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? K : never]+?: Exclude<Input<S[K]>, undefined>
   }
 >
