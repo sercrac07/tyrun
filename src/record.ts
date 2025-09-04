@@ -1,7 +1,7 @@
 import { BaseSchema } from './base'
-import type { Infer, ParseResult, Tyrun, TyrunRecord } from './types'
+import type { Output, ParseResult, Tyrun, TyrunRecord } from './types'
 
-export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: string]: Infer<S> }> implements TyrunRecord<S> {
+export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: string]: Output<S> }> implements TyrunRecord<S> {
   public readonly type = 'record'
   public readonly inner: S
 
@@ -10,11 +10,11 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
     this.inner = schema
   }
 
-  public override parse(value: unknown): ParseResult<{ [key: string]: Infer<S> }> {
+  public override parse(value: unknown): ParseResult<{ [key: string]: Output<S> }> {
     if (typeof value !== 'object' || Array.isArray(value) || value === null) return { success: false, errors: [this.message] }
 
     const errors: string[] = []
-    const output: Record<string, Infer<S>> = {}
+    const output: Record<string, Output<S>> = {}
 
     for (const [key, val] of Object.entries(value)) {
       const res = this.schema.parse(val)

@@ -52,7 +52,7 @@ export interface TyrunObject<S extends { [key: string]: Tyrun<any> }> extends Ty
   readonly type: 'object'
   readonly inner: S
 }
-export interface TyrunArray<S extends Tyrun<any>> extends TyrunBase<Infer<S>[]> {
+export interface TyrunArray<S extends Tyrun<any>> extends TyrunBase<Output<S>[]> {
   readonly type: 'array'
   readonly inner: S
   min(length: number, message?: string): this
@@ -62,33 +62,33 @@ export interface TyrunEnum<S extends string | number> extends TyrunBase<S> {
   readonly type: 'enum'
   readonly values: S[]
 }
-export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: string]: Infer<S> }> {
+export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: string]: Output<S> }> {
   readonly type: 'record'
   readonly inner: S
 }
-export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Infer<S>> {
+export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
   readonly type: 'union'
 }
-export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Infer<S> | undefined> {
+export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Output<S> | undefined> {
   readonly type: 'optional'
   readonly __isOptional: true
 }
-export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Infer<S> | null> {
+export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Output<S> | null> {
   readonly type: 'nullable'
 }
-export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Infer<S> | null | undefined> {
+export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Output<S> | null | undefined> {
   readonly type: 'nullish'
   readonly __isOptional: true
 }
 
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: Flatten<T[K]> } : T
 
-export type Infer<S extends Tyrun<any>> = S extends Tyrun<infer T> ? T : never
+export type Output<S extends Tyrun<any>> = S extends Tyrun<infer T> ? T : never
 
 export type TypeFromShape<S extends { [key: string]: Tyrun<any> }> = Flatten<
   {
-    [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? never : K]-?: Infer<S[K]>
+    [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? never : K]-?: Output<S[K]>
   } & {
-    [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? K : never]+?: Exclude<Infer<S[K]>, undefined>
+    [K in keyof S as S[K] extends TyrunOptional<any> | TyrunNullish<any> ? K : never]+?: Exclude<Output<S[K]>, undefined>
   }
 >

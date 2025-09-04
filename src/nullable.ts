@@ -1,4 +1,4 @@
-import type { Infer, ParseResult, Tyrun, TyrunMeta, TyrunNullable } from './types'
+import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunNullable } from './types'
 
 export class NullableSchema<S extends Tyrun<any>> implements TyrunNullable<S> {
   public readonly type = 'nullable'
@@ -8,7 +8,7 @@ export class NullableSchema<S extends Tyrun<any>> implements TyrunNullable<S> {
     this.meta = schema.meta
   }
 
-  public parse(value: unknown): ParseResult<Infer<S> | null> {
+  public parse(value: unknown): ParseResult<Output<S> | null> {
     if (value === null) return { success: true, data: value }
     return this.schema.parse(value)
   }

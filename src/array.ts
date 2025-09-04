@@ -1,7 +1,7 @@
 import { BaseSchema } from './base'
-import type { Infer, ParseResult, Tyrun, TyrunArray } from './types'
+import type { Output, ParseResult, Tyrun, TyrunArray } from './types'
 
-export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Infer<S>[]> implements TyrunArray<S> {
+export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> implements TyrunArray<S> {
   public readonly type = 'array'
   public readonly inner: S
 
@@ -10,7 +10,7 @@ export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Infer<S>[]> im
     this.inner = schema
   }
 
-  public override parse(value: unknown): ParseResult<Infer<S>[]> {
+  public override parse(value: unknown): ParseResult<Output<S>[]> {
     if (!Array.isArray(value)) return { success: false, errors: [this.message] }
 
     const errors: string[] = []

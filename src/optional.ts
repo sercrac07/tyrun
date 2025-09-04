@@ -1,4 +1,4 @@
-import type { Infer, ParseResult, Tyrun, TyrunMeta, TyrunOptional } from './types'
+import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunOptional } from './types'
 
 export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
   public readonly type = 'optional'
@@ -9,7 +9,7 @@ export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
     this.meta = schema.meta
   }
 
-  public parse(value: unknown): ParseResult<Infer<S> | undefined> {
+  public parse(value: unknown): ParseResult<Output<S> | undefined> {
     if (value === undefined) return { success: true, data: value }
     return this.schema.parse(value)
   }
