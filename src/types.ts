@@ -31,6 +31,7 @@ export interface TyrunBase<T> extends Tyrun<T> {
   description(description: string): this
   refine(predicate: (value: T) => boolean, message?: string): this
   transform(transformer: (value: T) => T): this
+  mutate<O>(mutation: (value: T) => O): TyrunMutation<this, O>
 }
 
 export interface TyrunString extends TyrunBase<string> {
@@ -81,6 +82,10 @@ export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Output<S> | n
 export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Output<S> | null | undefined> {
   readonly type: 'nullish'
   readonly __isOptional: true
+}
+export interface TyrunMutation<I extends TyrunBase<any>, O> extends Tyrun<O> {
+  readonly type: 'mutation'
+  readonly inner: I
 }
 
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: Flatten<T[K]> } : T
