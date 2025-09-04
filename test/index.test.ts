@@ -23,9 +23,14 @@ describe('string', () => {
         .refine(v => v.toUpperCase() === v)
         .parse('HELLO')
     ).toEqual(generateSuccess('HELLO'))
+    expect(
+      t
+        .string()
+        .transform(v => v.toUpperCase())
+        .parse('hello')
+    ).toEqual(generateSuccess('HELLO'))
     expect(t.string().min(5).parse('Hello')).toEqual(generateSuccess('Hello'))
     expect(t.string().max(5).parse('Hello')).toEqual(generateSuccess('Hello'))
-
     expect(
       t
         .string()
@@ -43,7 +48,6 @@ describe('string', () => {
 
     expect(t.string().min(6).parse('Hello')).toEqual(generateError('Value must be at least 6 characters long'))
     expect(t.string().max(4).parse('Hello')).toEqual(generateError('Value must be at most 4 characters long'))
-
     expect(
       t
         .string()
@@ -73,6 +77,12 @@ describe('number', () => {
         .refine(v => Boolean(v) === false)
         .parse(0)
     ).toEqual(generateSuccess(0))
+    expect(
+      t
+        .number()
+        .transform(v => v * 2)
+        .parse(2)
+    ).toEqual(generateSuccess(4))
     expect(t.number().min(5).parse(5)).toEqual(generateSuccess(5))
     expect(t.number().max(5).parse(5)).toEqual(generateSuccess(5))
   })
@@ -108,6 +118,12 @@ describe('boolean', () => {
         .refine(v => v === false)
         .parse(false)
     ).toEqual(generateSuccess(false))
+    expect(
+      t
+        .boolean()
+        .transform(v => !v)
+        .parse(false)
+    ).toEqual(generateSuccess(true))
   })
 
   it("shouldn't parse", () => {
@@ -138,6 +154,12 @@ describe('object', () => {
         .refine(v => v.name === v.age.toString())
         .parse({ name: '18', age: 18 })
     ).toEqual(generateSuccess({ name: '18', age: 18 }))
+    expect(
+      t
+        .object({ name: t.string(), age: t.number() })
+        .transform(v => ({ ...v, age: v.age + 1 }))
+        .parse({ name: '18', age: 18 })
+    ).toEqual(generateSuccess({ name: '18', age: 19 }))
   })
 
   it("shouldn't parse", () => {
@@ -168,6 +190,12 @@ describe('array', () => {
         .refine(v => v.every(item => item === 'Hello'))
         .parse(['Hello', 'Hello'])
     ).toEqual(generateSuccess(['Hello', 'Hello']))
+    expect(
+      t
+        .array(t.string())
+        .transform(v => v.map(item => item.toUpperCase()))
+        .parse(['Hello', 'Hello'])
+    ).toEqual(generateSuccess(['HELLO', 'HELLO']))
     expect(t.array(t.string()).min(2).parse(['1', '2'])).toEqual(generateSuccess(['1', '2']))
     expect(t.array(t.string()).max(2).parse(['1', '2'])).toEqual(generateSuccess(['1', '2']))
   })
@@ -203,6 +231,12 @@ describe('enum', () => {
         .refine(v => v === 'Hello')
         .parse('Hello')
     ).toEqual(generateSuccess('Hello'))
+    expect(
+      t
+        .enum(['Hello', 'World'])
+        .transform(v => (v === 'Hello' ? 'World' : 'Hello'))
+        .parse('Hello')
+    ).toEqual(generateSuccess('World'))
   })
 
   it("shouldn't parse", () => {
@@ -234,6 +268,12 @@ describe('record', () => {
         .refine(v => v.name === v.age)
         .parse({ name: 18, age: 18 })
     ).toEqual(generateSuccess({ name: 18, age: 18 }))
+    expect(
+      t
+        .record(t.number())
+        .transform(v => ({ ...v, extra: 18 }))
+        .parse({ name: 18, age: 18 })
+    ).toEqual(generateSuccess({ name: 18, age: 18, extra: 18 }))
   })
 
   it("shouldn't parse", () => {
@@ -265,6 +305,12 @@ describe('union', () => {
         .refine(v => typeof v === 'number')
         .parse(123)
     ).toEqual(generateSuccess(123))
+    expect(
+      t
+        .union([t.string(), t.number()])
+        .transform(v => (typeof v === 'string' ? v.toUpperCase() : v))
+        .parse('Hello')
+    ).toEqual(generateSuccess('HELLO'))
   })
 
   it("shouldn't parse", () => {
