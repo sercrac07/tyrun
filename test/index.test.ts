@@ -15,6 +15,8 @@ describe('string', () => {
     expect(t.string().nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.string().nullish().parse(null)).toEqual(generateSuccess(null))
 
+    expect(t.string().type).toBe('string')
+
     expect(t.string().min(5).parse('Hello')).toEqual(generateSuccess('Hello'))
     expect(t.string().max(5).parse('Hello')).toEqual(generateSuccess('Hello'))
 
@@ -55,6 +57,8 @@ describe('number', () => {
     expect(t.number().nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.number().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
 
+    expect(t.number().type).toBe('number')
+
     expect(t.number().min(5).parse(5)).toEqual(generateSuccess(5))
     expect(t.number().max(5).parse(5)).toEqual(generateSuccess(5))
   })
@@ -80,6 +84,8 @@ describe('boolean', () => {
     expect(t.boolean().optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.boolean().nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.boolean().nullish().parse(null)).toEqual(generateSuccess(null))
+
+    expect(t.boolean().type).toBe('boolean')
   })
 
   it("shouldn't parse", () => {
@@ -100,6 +106,8 @@ describe('object', () => {
     expect(t.object({ name: t.string(), age: t.number() }).optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.object({ name: t.string(), age: t.number() }).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.object({ name: t.string(), age: t.number() }).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
+
+    expect(t.object({ name: t.string(), age: t.number() }).type).toBe('object')
 
     expect(t.object({ name: t.string(), age: t.number() }).inner.name.parse('John')).toEqual(generateSuccess('John'))
   })
@@ -123,9 +131,11 @@ describe('array', () => {
     expect(t.array(t.string()).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.array(t.string()).nullish().parse(null)).toEqual(generateSuccess(null))
 
+    expect(t.array(t.string()).type).toBe('array')
+
+    expect(t.array(t.string()).inner.parse('Hello')).toEqual(generateSuccess('Hello'))
     expect(t.array(t.string()).min(2).parse(['1', '2'])).toEqual(generateSuccess(['1', '2']))
     expect(t.array(t.string()).max(2).parse(['1', '2'])).toEqual(generateSuccess(['1', '2']))
-    expect(t.array(t.string()).inner.parse('Hello')).toEqual(generateSuccess('Hello'))
   })
 
   it("shouldn't parse", () => {
@@ -150,6 +160,8 @@ describe('enum', () => {
     expect(t.enum(['Hello', 'World']).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.enum(['Hello', 'World']).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
 
+    expect(t.enum(['Hello', 'World']).type).toBe('enum')
+
     expect(t.enum(['Hello', 'World']).values).toEqual(['Hello', 'World'])
   })
 
@@ -172,6 +184,8 @@ describe('record', () => {
     expect(t.record(t.number()).optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.record(t.number()).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.record(t.number()).nullish().parse(null)).toEqual(generateSuccess(null))
+
+    expect(t.record(t.number()).type).toBe('record')
 
     expect(t.record(t.number()).inner.parse(18)).toEqual(generateSuccess(18))
   })
@@ -196,6 +210,8 @@ describe('union', () => {
     expect(t.union([t.string(), t.number()]).optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.union([t.string(), t.number()]).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.union([t.string(), t.number()]).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
+
+    expect(t.union([t.string(), t.number()]).type).toBe('union')
   })
 
   it("shouldn't parse", () => {
