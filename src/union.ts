@@ -2,6 +2,8 @@ import { BaseSchema } from './base'
 import type { Infer, ParseResult, Tyrun, TyrunUnion } from './types'
 
 export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Infer<S>> implements TyrunUnion<S> {
+  public readonly type = 'union'
+
   constructor(private schemas: S[]) {
     super()
   }

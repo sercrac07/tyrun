@@ -1,6 +1,7 @@
 import type { Infer, ParseResult, Tyrun, TyrunMeta, TyrunOptional } from './types'
 
 export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
+  public readonly type = 'optional'
   public readonly meta: TyrunMeta = { name: null, description: null }
   public readonly __isOptional = true
 

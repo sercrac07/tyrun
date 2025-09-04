@@ -2,6 +2,7 @@ import { BaseSchema } from './base'
 import type { Infer, ParseResult, Tyrun, TyrunRecord } from './types'
 
 export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: string]: Infer<S> }> implements TyrunRecord<S> {
+  public readonly type = 'record'
   public readonly inner: S
 
   constructor(private schema: S, private message: string = 'Value must be an object') {

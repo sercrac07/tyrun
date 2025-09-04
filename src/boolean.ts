@@ -2,6 +2,8 @@ import { BaseSchema } from './base'
 import type { ParseResult, TyrunBoolean } from './types'
 
 export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
+  public readonly type = 'boolean'
+
   constructor(private message: string = 'Value must be a boolean') {
     super()
   }

@@ -2,6 +2,7 @@ import { BaseSchema } from './base'
 import type { Infer, ParseResult, Tyrun, TyrunArray } from './types'
 
 export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Infer<S>[]> implements TyrunArray<S> {
+  public readonly type = 'array'
   public readonly inner: S
 
   constructor(private schema: S, private message: string = 'Value must be an array') {

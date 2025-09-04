@@ -2,6 +2,7 @@ import { BaseSchema } from './base'
 import { ParseResult, TyrunEnum } from './types'
 
 export class EnumSchema<S extends string | number> extends BaseSchema<S> implements TyrunEnum<S> {
+  public readonly type = 'enum'
   public readonly values: S[]
 
   constructor(private schema: S[], private message: string = `Value must be one from the options: ${schema.join(', ')}`) {

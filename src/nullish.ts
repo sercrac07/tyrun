@@ -1,6 +1,7 @@
 import type { Infer, ParseResult, Tyrun, TyrunMeta, TyrunNullish } from './types'
 
 export class NullishSchema<S extends Tyrun<any>> implements TyrunNullish<S> {
+  public readonly type = 'nullish'
   public readonly meta: TyrunMeta = { name: null, description: null }
   public readonly __isOptional = true
 

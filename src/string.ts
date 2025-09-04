@@ -2,6 +2,8 @@ import { BaseSchema } from './base'
 import type { ParseResult, TyrunString } from './types'
 
 export class StringSchema extends BaseSchema<string> implements TyrunString {
+  public readonly type = 'string'
+
   constructor(private message: string = 'Value must be a string') {
     super()
   }

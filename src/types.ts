@@ -14,7 +14,7 @@ export interface T {
 }
 
 export interface Tyrun<T> {
-  meta: TyrunMeta
+  readonly meta: TyrunMeta
   parse(value: unknown): ParseResult<T>
 }
 
@@ -32,41 +32,55 @@ export interface TyrunBase<T> extends Tyrun<T> {
 }
 
 export interface TyrunString extends TyrunBase<string> {
+  readonly type: 'string'
   min(length: number, message?: string): this
   max(length: number, message?: string): this
   regex(regex: RegExp, message?: string): this
 }
 export interface TyrunNumber extends TyrunBase<number> {
+  readonly type: 'number'
   min(amount: number, message?: string): this
   max(amount: number, message?: string): this
 }
-export interface TyrunBoolean extends TyrunBase<boolean> {}
+export interface TyrunBoolean extends TyrunBase<boolean> {
+  readonly type: 'boolean'
+}
 export interface TyrunObject<S extends { [key: string]: Tyrun<any> }> extends TyrunBase<TypeFromShape<S>> {
-  inner: S
+  readonly type: 'object'
+  readonly inner: S
 }
 export interface TyrunArray<S extends Tyrun<any>> extends TyrunBase<Infer<S>[]> {
+  readonly type: 'array'
+  readonly inner: S
   min(length: number, message?: string): this
   max(length: number, message?: string): this
-  inner: S
 }
 export interface TyrunEnum<S extends string | number> extends TyrunBase<S> {
-  values: S[]
+  readonly type: 'enum'
+  readonly values: S[]
 }
 export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: string]: Infer<S> }> {
-  inner: S
+  readonly type: 'record'
+  readonly inner: S
 }
-export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Infer<S>> {}
+export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Infer<S>> {
+  readonly type: 'union'
+}
 export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Infer<S> | undefined> {
+  readonly type: 'optional'
   readonly __isOptional: true
 }
-export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Infer<S> | null> {}
+export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Infer<S> | null> {
+  readonly type: 'nullable'
+}
 export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Infer<S> | null | undefined> {
+  readonly type: 'nullish'
   readonly __isOptional: true
 }
 
 type Merge<T extends { [key: string]: any }> = { [K in keyof T]: T[K] }
 
-export type Infer<S extends Tyrun<any>> = S extends TyrunObject<infer Shape> ? TypeFromShape<Shape> : S extends Tyrun<infer T> ? T : never
+export type Infer<S extends Tyrun<any>> = S extends Tyrun<infer T> ? T : never
 
 export type TypeFromShape<S extends { [key: string]: Tyrun<any> }> = Merge<
   {
