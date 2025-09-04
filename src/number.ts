@@ -6,7 +6,7 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
     super()
   }
 
-  override parse(value: unknown): ParseResult<number> {
+  public override parse(value: unknown): ParseResult<number> {
     if (typeof value !== 'number') return { success: false, errors: [this.message] }
 
     const errors = this.runValidators(value)

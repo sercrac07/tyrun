@@ -6,7 +6,7 @@ export class StringSchema extends BaseSchema<string> implements TyrunString {
     super()
   }
 
-  override parse(value: unknown): ParseResult<string> {
+  public override parse(value: unknown): ParseResult<string> {
     if (typeof value !== 'string') return { success: false, errors: [this.message] }
 
     const errors = this.runValidators(value)

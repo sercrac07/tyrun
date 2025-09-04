@@ -2,14 +2,14 @@ import { BaseSchema } from './base'
 import type { Infer, ParseResult, Tyrun, TyrunRecord } from './types'
 
 export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: string]: Infer<S> }> implements TyrunRecord<S> {
-  public inner: S
+  public readonly inner: S
 
   constructor(private schema: S, private message: string = 'Value must be an object') {
     super()
     this.inner = schema
   }
 
-  override parse(value: unknown): ParseResult<{ [key: string]: Infer<S> }> {
+  public override parse(value: unknown): ParseResult<{ [key: string]: Infer<S> }> {
     if (typeof value !== 'object' || Array.isArray(value) || value === null) return { success: false, errors: [this.message] }
 
     const errors: string[] = []

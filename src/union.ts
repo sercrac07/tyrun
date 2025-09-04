@@ -6,7 +6,7 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Infer<S>> impl
     super()
   }
 
-  override parse(value: unknown): ParseResult<Infer<S>> {
+  public override parse(value: unknown): ParseResult<Infer<S>> {
     const errors: string[] = []
 
     for (const schema of this.schemas) {

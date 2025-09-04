@@ -4,7 +4,7 @@ import { OptionalSchema } from './optional'
 import type { ParseResult, TyrunBase, TyrunMeta, TyrunNullable, TyrunNullish, TyrunOptional } from './types'
 
 export class BaseSchema<T> implements TyrunBase<T> {
-  public meta: TyrunMeta = { name: null, description: null }
+  public readonly meta: TyrunMeta = { name: null, description: null }
   protected validators: ((value: T) => null | string)[] = []
 
   protected runValidators(value: T) {

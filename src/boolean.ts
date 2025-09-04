@@ -6,7 +6,7 @@ export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
     super()
   }
 
-  override parse(value: unknown): ParseResult<boolean> {
+  public override parse(value: unknown): ParseResult<boolean> {
     if (typeof value !== 'boolean') return { success: false, errors: [this.message] }
     return { success: true, data: value }
   }
