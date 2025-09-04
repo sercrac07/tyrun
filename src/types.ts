@@ -3,18 +3,61 @@ type ParseSuccess<T> = { success: true; data: T }
 export type ParseResult<T> = ParseError | ParseSuccess<T>
 
 export interface T {
+  /**
+   * Validates that the input is a string.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#string-validator)
+   */
   string: (message?: string) => TyrunString
+  /**
+   * Validates that the input is a number.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#number-validator)
+   */
   number: (message?: string) => TyrunNumber
+  /**
+   * Validates that the input is a boolean.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#boolean-validator)
+   */
   boolean: (message?: string) => TyrunBoolean
+  /**
+   * Validates that the input is an object with the specified shape.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#object-validator)
+   */
   object: <S extends { [key: string]: Tyrun<any> }>(schema: S, message?: string) => TyrunObject<S>
+  /**
+   * Validates that the input is an array of the defined schema.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#array-validator)
+   */
   array: <S extends Tyrun<any>>(schema: S, message?: string) => TyrunArray<S>
+  /**
+   * Validates that the input is one of the defined enum values.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#enum-validator)
+   */
   enum: <S extends string | number>(schema: S[], message?: string) => TyrunEnum<S>
+  /**
+   * Validates that the input is an object of the defined schema.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#record-validator)
+   */
   record: <S extends Tyrun<any>>(schema: S, message?: string) => TyrunRecord<S>
+  /**
+   * Validates that the input is one of the defined schemas.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#union-validator)
+   */
   union: <S extends Tyrun<any>>(schemas: S[]) => TyrunUnion<S>
 }
 
 export interface Tyrun<T> {
   readonly meta: TyrunMeta
+  /**
+   * Validates the input value against the schema.
+   */
   parse(value: unknown): ParseResult<T>
 }
 
@@ -24,49 +67,115 @@ export interface TyrunMeta {
 }
 
 export interface TyrunBase<T> extends Tyrun<T> {
+  /**
+   * Allows the input value to be `undefined`.
+   */
   optional(): TyrunOptional<this>
+  /**
+   * Allows the input value to be `null`.
+   */
   nullable(): TyrunNullable<this>
+  /**
+   * Allows the input value to be `null` and `undefined`.
+   */
   nullish(): TyrunNullish<this>
+  /**
+   * Sets the name of the schema.
+   */
   name(name: string): this
+  /**
+   * Sets the description of the schema.
+   */
   description(description: string): this
+  /**
+   * Add custom validation logic to the schema.
+   */
   refine(predicate: (value: T) => boolean, message?: string): this
+  /**
+   * Transforms the input value after validation.
+   */
   transform(transformer: (value: T) => T): this
+  /**
+   * Transforms the input value into a new value after the validation and transformation.
+   */
   mutate<O>(mutation: (value: T) => O): TyrunMutation<this, O>
 }
 
 export interface TyrunString extends TyrunBase<string> {
   readonly type: 'string'
+  /**
+   * Coerces the input value to a string.
+   */
   coerce(): this
+  /**
+   * Sets the minimum length of the string.
+   */
   min(length: number, message?: string): this
+  /**
+   * Sets the maximum length of the string.
+   */
   max(length: number, message?: string): this
+  /**
+   * Sets a regular expression to match the string.
+   */
   regex(regex: RegExp, message?: string): this
 }
 export interface TyrunNumber extends TyrunBase<number> {
   readonly type: 'number'
+  /**
+   * Coerces the input value to a number.
+   */
   coerce(): this
+  /**
+   * Sets the minimum value of the number.
+   */
   min(amount: number, message?: string): this
+  /**
+   * Sets the maximum value of the number.
+   */
   max(amount: number, message?: string): this
 }
 export interface TyrunBoolean extends TyrunBase<boolean> {
   readonly type: 'boolean'
+  /**
+   * Coerces the input value to a boolean.
+   */
   coerce(): this
 }
 export interface TyrunObject<S extends { [key: string]: Tyrun<any> }> extends TyrunBase<TypeFromShape<S>> {
   readonly type: 'object'
+  /**
+   * The inner schema of the object.
+   */
   readonly inner: S
 }
 export interface TyrunArray<S extends Tyrun<any>> extends TyrunBase<Output<S>[]> {
   readonly type: 'array'
+  /**
+   * The inner schema of the array.
+   */
   readonly inner: S
+  /**
+   * Sets the minimum length of the array.
+   */
   min(length: number, message?: string): this
+  /**
+   * Sets the maximum length of the array.
+   */
   max(length: number, message?: string): this
 }
 export interface TyrunEnum<S extends string | number> extends TyrunBase<S> {
   readonly type: 'enum'
+  /**
+   * The enum values.
+   */
   readonly values: S[]
 }
 export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: string]: Output<S> }> {
   readonly type: 'record'
+  /**
+   * The inner schema of the record.
+   */
   readonly inner: S
 }
 export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
@@ -85,12 +194,21 @@ export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Output<S> | nu
 }
 export interface TyrunMutation<I extends TyrunBase<any>, O> extends Tyrun<O> {
   readonly type: 'mutation'
+  /**
+   * The inner schema of the mutation.
+   */
   readonly inner: I
 }
 
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: T[K] } : T
 
+/**
+ * Infers the output type of a schema.
+ */
 export type Output<S extends Tyrun<any>> = S extends Tyrun<infer T> ? T : never
+/**
+ * Infers the input type of a schema.
+ */
 export type Input<S extends Tyrun<any>> = S extends TyrunObject<infer Shape>
   ? TypeFromShapeInput<Shape>
   : S extends TyrunArray<infer T>
