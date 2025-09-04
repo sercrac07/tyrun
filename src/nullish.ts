@@ -4,7 +4,9 @@ export class NullishSchema<S extends Tyrun<any>> implements TyrunNullish<S> {
   public readonly meta: TyrunMeta = { name: null, description: null }
   public readonly __isOptional = true
 
-  constructor(private schema: S) {}
+  constructor(private schema: S) {
+    this.meta = schema.meta
+  }
 
   public parse(value: unknown): ParseResult<Infer<S> | null | undefined> {
     if (value === undefined || value === null) return { success: true, data: value }

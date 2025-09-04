@@ -3,7 +3,9 @@ import type { Infer, ParseResult, Tyrun, TyrunMeta, TyrunNullable } from './type
 export class NullableSchema<S extends Tyrun<any>> implements TyrunNullable<S> {
   public readonly meta: TyrunMeta = { name: null, description: null }
 
-  constructor(private schema: S) {}
+  constructor(private schema: S) {
+    this.meta = schema.meta
+  }
 
   public parse(value: unknown): ParseResult<Infer<S> | null> {
     if (value === null) return { success: true, data: value }

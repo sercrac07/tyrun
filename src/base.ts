@@ -3,7 +3,7 @@ import { NullishSchema } from './nullish'
 import { OptionalSchema } from './optional'
 import type { ParseResult, TyrunBase, TyrunMeta, TyrunNullable, TyrunNullish, TyrunOptional } from './types'
 
-export class BaseSchema<T> implements TyrunBase<T> {
+export abstract class BaseSchema<T> implements TyrunBase<T> {
   public readonly meta: TyrunMeta = { name: null, description: null }
   protected validators: ((value: T) => null | string)[] = []
 
@@ -18,24 +18,16 @@ export class BaseSchema<T> implements TyrunBase<T> {
 
   constructor() {}
 
-  public parse(_value: unknown): ParseResult<T> {
-    throw new Error('Method must be implemented in sub classes.')
-  }
+  public abstract parse(_value: unknown): ParseResult<T>
 
   public optional(): TyrunOptional<this> {
-    const schema = new OptionalSchema(this)
-    schema.meta = this.meta
-    return schema
+    return new OptionalSchema(this)
   }
   public nullable(): TyrunNullable<this> {
-    const schema = new NullableSchema(this)
-    schema.meta = this.meta
-    return schema
+    return new NullableSchema(this)
   }
   public nullish(): TyrunNullish<this> {
-    const schema = new NullishSchema(this)
-    schema.meta = this.meta
-    return schema
+    return new NullishSchema(this)
   }
 
   public name(name: string) {
