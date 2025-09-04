@@ -29,6 +29,7 @@ export interface TyrunBase<T> extends Tyrun<T> {
   nullish(): TyrunNullish<this>
   name(name: string): this
   description(description: string): this
+  refine(predicate: (value: T) => boolean, message?: string): this
 }
 
 export interface TyrunString extends TyrunBase<string> {

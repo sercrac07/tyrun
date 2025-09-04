@@ -22,6 +22,7 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
       else output[key] = res.data
     }
 
+    errors.push(...this.runValidators(output))
     if (errors.length) return { success: false, errors }
     return { success: true, data: output }
   }

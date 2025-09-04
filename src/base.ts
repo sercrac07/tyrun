@@ -20,6 +20,11 @@ export abstract class BaseSchema<T> implements TyrunBase<T> {
 
   public abstract parse(_value: unknown): ParseResult<T>
 
+  public refine(predicate: (value: T) => boolean, message: string = 'Refinement failed'): this {
+    this.validators.push(v => (predicate(v) ? null : message))
+    return this
+  }
+
   public optional(): TyrunOptional<this> {
     return new OptionalSchema(this)
   }
