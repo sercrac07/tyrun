@@ -17,6 +17,12 @@ describe('string', () => {
 
     expect(t.string().type).toBe('string')
 
+    expect(
+      t
+        .string()
+        .refine(v => v.toUpperCase() === v)
+        .parse('HELLO')
+    ).toEqual(generateSuccess('HELLO'))
     expect(t.string().min(5).parse('Hello')).toEqual(generateSuccess('Hello'))
     expect(t.string().max(5).parse('Hello')).toEqual(generateSuccess('Hello'))
 
@@ -33,6 +39,7 @@ describe('string', () => {
     expect(t.string().parse(true)).toEqual(generateError('Value must be a string'))
     expect(t.string().parse({ name: 'John' })).toEqual(generateError('Value must be a string'))
     expect(t.string().parse(['Hello World!'])).toEqual(generateError('Value must be a string'))
+    expect(t.string().coerce().parse(123)).toEqual(generateSuccess('123'))
 
     expect(t.string().min(6).parse('Hello')).toEqual(generateError('Value must be at least 6 characters long'))
     expect(t.string().max(4).parse('Hello')).toEqual(generateError('Value must be at most 4 characters long'))
@@ -56,9 +63,16 @@ describe('number', () => {
     expect(t.number().optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.number().nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.number().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
+    expect(t.number().coerce().parse('123')).toEqual(generateSuccess(123))
 
     expect(t.number().type).toBe('number')
 
+    expect(
+      t
+        .number()
+        .refine(v => Boolean(v) === false)
+        .parse(0)
+    ).toEqual(generateSuccess(0))
     expect(t.number().min(5).parse(5)).toEqual(generateSuccess(5))
     expect(t.number().max(5).parse(5)).toEqual(generateSuccess(5))
   })
@@ -84,8 +98,16 @@ describe('boolean', () => {
     expect(t.boolean().optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.boolean().nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.boolean().nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.boolean().coerce().parse('Hello')).toEqual(generateSuccess(true))
 
     expect(t.boolean().type).toBe('boolean')
+
+    expect(
+      t
+        .boolean()
+        .refine(v => v === false)
+        .parse(false)
+    ).toEqual(generateSuccess(false))
   })
 
   it("shouldn't parse", () => {
@@ -110,6 +132,12 @@ describe('object', () => {
     expect(t.object({ name: t.string(), age: t.number() }).type).toBe('object')
 
     expect(t.object({ name: t.string(), age: t.number() }).inner.name.parse('John')).toEqual(generateSuccess('John'))
+    expect(
+      t
+        .object({ name: t.string(), age: t.number() })
+        .refine(v => v.name === v.age.toString())
+        .parse({ name: '18', age: 18 })
+    ).toEqual(generateSuccess({ name: '18', age: 18 }))
   })
 
   it("shouldn't parse", () => {
@@ -134,6 +162,12 @@ describe('array', () => {
     expect(t.array(t.string()).type).toBe('array')
 
     expect(t.array(t.string()).inner.parse('Hello')).toEqual(generateSuccess('Hello'))
+    expect(
+      t
+        .array(t.string())
+        .refine(v => v.every(item => item === 'Hello'))
+        .parse(['Hello', 'Hello'])
+    ).toEqual(generateSuccess(['Hello', 'Hello']))
     expect(t.array(t.string()).min(2).parse(['1', '2'])).toEqual(generateSuccess(['1', '2']))
     expect(t.array(t.string()).max(2).parse(['1', '2'])).toEqual(generateSuccess(['1', '2']))
   })
@@ -163,6 +197,12 @@ describe('enum', () => {
     expect(t.enum(['Hello', 'World']).type).toBe('enum')
 
     expect(t.enum(['Hello', 'World']).values).toEqual(['Hello', 'World'])
+    expect(
+      t
+        .enum(['Hello', 'World'])
+        .refine(v => v === 'Hello')
+        .parse('Hello')
+    ).toEqual(generateSuccess('Hello'))
   })
 
   it("shouldn't parse", () => {
@@ -188,6 +228,12 @@ describe('record', () => {
     expect(t.record(t.number()).type).toBe('record')
 
     expect(t.record(t.number()).inner.parse(18)).toEqual(generateSuccess(18))
+    expect(
+      t
+        .record(t.number())
+        .refine(v => v.name === v.age)
+        .parse({ name: 18, age: 18 })
+    ).toEqual(generateSuccess({ name: 18, age: 18 }))
   })
 
   it("shouldn't parse", () => {
@@ -212,6 +258,13 @@ describe('union', () => {
     expect(t.union([t.string(), t.number()]).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
 
     expect(t.union([t.string(), t.number()]).type).toBe('union')
+
+    expect(
+      t
+        .union([t.string(), t.number()])
+        .refine(v => typeof v === 'number')
+        .parse(123)
+    ).toEqual(generateSuccess(123))
   })
 
   it("shouldn't parse", () => {
