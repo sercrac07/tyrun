@@ -24,6 +24,8 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
 
     errors.push(...this.runValidators(output))
     if (errors.length) return { success: false, errors }
-    return { success: true, data: output }
+
+    const v = this.runTransformers(output)
+    return { success: true, data: v }
   }
 }

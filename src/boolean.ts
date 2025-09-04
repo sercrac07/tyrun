@@ -13,7 +13,9 @@ export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
     if (this.__coerce) value = Boolean(value)
 
     if (typeof value !== 'boolean') return { success: false, errors: [this.message] }
-    return { success: true, data: value }
+
+    const v = this.runTransformers(value)
+    return { success: true, data: v }
   }
   public coerce(): this {
     this.__coerce = true

@@ -17,7 +17,10 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> imp
       else {
         const validatorErrors = this.runValidators(res.data)
         if (validatorErrors.length) errors.push(...validatorErrors)
-        else return { success: true, data: res.data }
+        else {
+          const v = this.runTransformers(res.data)
+          return { success: true, data: v }
+        }
       }
     }
 

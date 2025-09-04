@@ -16,7 +16,9 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
 
     const errors = this.runValidators(value)
     if (errors.length) return { success: false, errors }
-    return { success: true, data: value }
+
+    const v = this.runTransformers(value)
+    return { success: true, data: v }
   }
   public coerce(): this {
     this.__coerce = true

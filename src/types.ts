@@ -30,6 +30,7 @@ export interface TyrunBase<T> extends Tyrun<T> {
   name(name: string): this
   description(description: string): this
   refine(predicate: (value: T) => boolean, message?: string): this
+  transform(transformer: (value: T) => T): this
 }
 
 export interface TyrunString extends TyrunBase<string> {

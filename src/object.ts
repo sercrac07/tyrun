@@ -24,6 +24,8 @@ export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseS
 
     errors.push(...this.runValidators(output as TypeFromShape<S>))
     if (errors.length) return { success: false, errors }
-    return { success: true, data: output as TypeFromShape<S> }
+
+    const v = this.runTransformers(output as TypeFromShape<S>)
+    return { success: true, data: v }
   }
 }

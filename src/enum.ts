@@ -15,6 +15,8 @@ export class EnumSchema<S extends string | number> extends BaseSchema<S> impleme
 
     const errors = this.runValidators(value as S)
     if (errors.length) return { success: false, errors }
-    return { success: true, data: value as S }
+
+    const v = this.runTransformers(value as S)
+    return { success: true, data: v }
   }
 }

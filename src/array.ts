@@ -24,7 +24,9 @@ export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> i
 
     errors.push(...this.runValidators(output))
     if (errors.length) return { success: false, errors }
-    return { success: true, data: output }
+
+    const v = this.runTransformers(output)
+    return { success: true, data: v }
   }
 
   public min(length: number, message: string = `Value must contain at least ${length} items`): this {

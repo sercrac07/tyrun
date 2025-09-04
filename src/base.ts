@@ -6,6 +6,7 @@ import type { ParseResult, TyrunBase, TyrunMeta, TyrunNullable, TyrunNullish, Ty
 export abstract class BaseSchema<T> implements TyrunBase<T> {
   public readonly meta: TyrunMeta = { name: null, description: null }
   protected validators: ((value: T) => null | string)[] = []
+  protected transformers: ((value: T) => T)[] = []
 
   protected runValidators(value: T) {
     const errors: string[] = []
@@ -15,6 +16,9 @@ export abstract class BaseSchema<T> implements TyrunBase<T> {
     })
     return errors
   }
+  protected runTransformers(value: T) {
+    return this.transformers.reduce((acc, transformer) => transformer(acc), value)
+  }
 
   constructor() {}
 
@@ -22,6 +26,10 @@ export abstract class BaseSchema<T> implements TyrunBase<T> {
 
   public refine(predicate: (value: T) => boolean, message: string = 'Refinement failed'): this {
     this.validators.push(v => (predicate(v) ? null : message))
+    return this
+  }
+  public transform(transformer: (value: T) => T): this {
+    this.transformers.push(transformer)
     return this
   }
 
