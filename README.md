@@ -150,7 +150,7 @@ t.date().max(new Date('2025-09-05'))
 t.date().coerce()
 ```
 
-### File
+### File validator
 
 Validates that the input is a file.
 
