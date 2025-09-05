@@ -443,7 +443,7 @@ describe('file', () => {
     expect(
       t
         .file()
-        .mutate(v => new File([v], v.name.toUpperCase()))
+        .transform(v => new File([v], v.name.toUpperCase()))
         .parse(file)
     ).toEqual(generateSuccess(new File([file], file.name.toUpperCase()))) // Posible error (when created the new file, property created at might be different)
 
