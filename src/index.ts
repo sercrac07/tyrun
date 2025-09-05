@@ -2,6 +2,7 @@ import { ArraySchema } from './array'
 import { BooleanSchema } from './boolean'
 import { DateSchema } from './date'
 import { EnumSchema } from './enum'
+import { FileSchema } from './file'
 import { NumberSchema } from './number'
 import { ObjectSchema } from './object'
 import { RecordSchema } from './record'
@@ -21,4 +22,5 @@ export const t: T = {
   record: (schema, message) => new RecordSchema(schema, message),
   union: schemas => new UnionSchema(schemas),
   date: message => new DateSchema(message),
+  file: message => new FileSchema(message),
 }

@@ -57,6 +57,12 @@ export interface T {
    * [API Reference](https://github.com/sercrac07/tyrun#date-validator)
    */
   date: (message?: string) => TyrunDate
+  /**
+   * Validates that the input is a file.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#file-validator)
+   */
+  file: (message?: string) => TyrunFile
 }
 
 export interface Tyrun<T> {
@@ -201,6 +207,21 @@ export interface TyrunDate extends TyrunBase<Date> {
    * Sets the maximum date of the date.
    */
   max(date: Date, message?: string): this
+}
+export interface TyrunFile extends TyrunBase<File> {
+  readonly type: 'file'
+  /**
+   * Sets the minimum size of the file (in bytes).
+   */
+  min(size: number, message?: string): this
+  /**
+   * Sets the maximum size of the file (in bytes).
+   */
+  max(size: number, message?: string): this
+  /**
+   * Sets the accepted file types.
+   */
+  types(types: string[], message?: string): this
 }
 export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Output<S> | undefined> {
   readonly type: 'optional'
