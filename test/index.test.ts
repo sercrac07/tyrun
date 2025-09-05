@@ -367,3 +367,51 @@ describe('union', () => {
     expect(t.union([t.string(), t.number()]).parse(['Hello', 18])).toEqual(generateError('Value must be a string', 'Value must be a number'))
   })
 })
+
+describe('date', () => {
+  it('should be defined', () => {
+    expect(t.date).toBeDefined()
+  })
+
+  it('should parse', () => {
+    expect(t.date().parse(new Date())).toEqual(generateSuccess(new Date()))
+    expect(t.date().optional().parse(undefined)).toEqual(generateSuccess(undefined))
+    expect(t.date().nullable().parse(null)).toEqual(generateSuccess(null))
+    expect(t.date().nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.date().coerce().parse('2025-09-05')).toEqual(generateSuccess(new Date('2025-09-05')))
+    expect(
+      t
+        .date()
+        .mutate(v => v.getFullYear())
+        .parse(new Date('2025-09-05'))
+    ).toEqual(generateSuccess(2025))
+    expect(
+      t
+        .date()
+        .refine(v => v.getFullYear() === 2025)
+        .parse(new Date('2025-09-05'))
+    ).toEqual(generateSuccess(new Date('2025-09-05')))
+    expect(
+      t
+        .date()
+        .transform(v => new Date(`${v.getFullYear() + 1}-09-05`))
+        .parse(new Date('2025-09-05'))
+    ).toEqual(generateSuccess(new Date('2026-09-05')))
+
+    expect(t.date().type).toBe('date')
+
+    expect(t.date().min(new Date('2025-09-05')).parse(new Date('2025-09-05'))).toEqual(generateSuccess(new Date('2025-09-05')))
+    expect(t.date().max(new Date('2025-09-05')).parse(new Date('2025-09-05'))).toEqual(generateSuccess(new Date('2025-09-05')))
+  })
+
+  it("shouldn't parse", () => {
+    expect(t.date().parse('2025-09-05')).toEqual(generateError('Value must be a date'))
+    expect(t.date().parse(18)).toEqual(generateError('Value must be a date'))
+    expect(t.date().parse(true)).toEqual(generateError('Value must be a date'))
+    expect(t.date().parse({ hello: 18 })).toEqual(generateError('Value must be a date'))
+    expect(t.date().parse([1, 18])).toEqual(generateError('Value must be a date'))
+
+    expect(t.date().min(new Date('2025-09-05')).parse(new Date('2024-09-05'))).toEqual(generateError('Value must be greater than Fri Sep 05 2025'))
+    expect(t.date().max(new Date('2025-09-05')).parse(new Date('2026-09-05'))).toEqual(generateError('Value must be less than Fri Sep 05 2025'))
+  })
+})
