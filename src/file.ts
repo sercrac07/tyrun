@@ -4,7 +4,7 @@ import type { ParseResult, TyrunFile } from './types'
 export class FileSchema extends BaseSchema<File> implements TyrunFile {
   readonly type = 'file'
 
-  constructor(private message: string = 'Value must be a valid file') {
+  constructor(private message: string = 'Value must be a file') {
     super()
   }
 
