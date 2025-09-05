@@ -185,12 +185,20 @@ export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Output<S> | u
   readonly type: 'optional'
   readonly __isOptional: true
   /**
+   * The inner schema of the optional.
+   */
+  readonly inner: S
+  /**
    * Transforms the input value into a new value after the validation and transformation.
    */
   mutate<O>(mutation: (value: Output<S> | undefined) => O): TyrunMutation<this, O>
 }
 export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Output<S> | null> {
   readonly type: 'nullable'
+  /**
+   * The inner schema of the nullable.
+   */
+  readonly inner: S
   /**
    * Transforms the input value into a new value after the validation and transformation.
    */
@@ -199,6 +207,10 @@ export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Output<S> | n
 export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Output<S> | null | undefined> {
   readonly type: 'nullish'
   readonly __isOptional: true
+  /**
+   * The inner schema of the nullish.
+   */
+  readonly inner: S
   /**
    * Transforms the input value into a new value after the validation and transformation.
    */

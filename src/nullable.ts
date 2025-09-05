@@ -3,10 +3,12 @@ import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunMutation, TyrunNullabl
 
 export class NullableSchema<S extends Tyrun<any>> implements TyrunNullable<S> {
   public readonly type = 'nullable'
+  public readonly inner: S
   public readonly meta: TyrunMeta = { name: null, description: null }
 
   constructor(private schema: S) {
     this.meta = schema.meta
+    this.inner = schema
   }
 
   public parse(value: unknown): ParseResult<Output<S> | null> {

@@ -3,11 +3,13 @@ import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunMutation, TyrunNullish
 
 export class NullishSchema<S extends Tyrun<any>> implements TyrunNullish<S> {
   public readonly type = 'nullish'
+  public readonly inner: S
   public readonly meta: TyrunMeta = { name: null, description: null }
   public readonly __isOptional = true
 
   constructor(private schema: S) {
     this.meta = schema.meta
+    this.inner = schema
   }
 
   public parse(value: unknown): ParseResult<Output<S> | null | undefined> {
