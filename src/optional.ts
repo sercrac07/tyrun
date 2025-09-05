@@ -1,4 +1,5 @@
-import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunOptional } from './types'
+import { MutationSchema } from './mutation'
+import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunMutation, TyrunOptional } from './types'
 
 export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
   public readonly type = 'optional'
@@ -12,5 +13,9 @@ export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
   public parse(value: unknown): ParseResult<Output<S> | undefined> {
     if (value === undefined) return { success: true, data: value }
     return this.schema.parse(value)
+  }
+
+  public mutate<O>(mutation: (value: Output<S> | undefined) => O): TyrunMutation<this, O> {
+    return new MutationSchema(this, mutation)
   }
 }

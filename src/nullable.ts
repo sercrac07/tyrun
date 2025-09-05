@@ -1,4 +1,5 @@
-import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunNullable } from './types'
+import { MutationSchema } from './mutation'
+import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunMutation, TyrunNullable } from './types'
 
 export class NullableSchema<S extends Tyrun<any>> implements TyrunNullable<S> {
   public readonly type = 'nullable'
@@ -11,5 +12,9 @@ export class NullableSchema<S extends Tyrun<any>> implements TyrunNullable<S> {
   public parse(value: unknown): ParseResult<Output<S> | null> {
     if (value === null) return { success: true, data: value }
     return this.schema.parse(value)
+  }
+
+  public mutate<O>(mutation: (value: Output<S> | null) => O): TyrunMutation<this, O> {
+    return new MutationSchema(this, mutation)
   }
 }

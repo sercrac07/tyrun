@@ -184,15 +184,27 @@ export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
 export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Output<S> | undefined> {
   readonly type: 'optional'
   readonly __isOptional: true
+  /**
+   * Transforms the input value into a new value after the validation and transformation.
+   */
+  mutate<O>(mutation: (value: Output<S> | undefined) => O): TyrunMutation<this, O>
 }
 export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Output<S> | null> {
   readonly type: 'nullable'
+  /**
+   * Transforms the input value into a new value after the validation and transformation.
+   */
+  mutate<O>(mutation: (value: Output<S> | null) => O): TyrunMutation<this, O>
 }
 export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Output<S> | null | undefined> {
   readonly type: 'nullish'
   readonly __isOptional: true
+  /**
+   * Transforms the input value into a new value after the validation and transformation.
+   */
+  mutate<O>(mutation: (value: Output<S> | null | undefined) => O): TyrunMutation<this, O>
 }
-export interface TyrunMutation<I extends TyrunBase<any>, O> extends Tyrun<O> {
+export interface TyrunMutation<I extends TyrunBase<any> | TyrunOptional<any> | TyrunNullable<any> | TyrunNullish<any>, O> extends Tyrun<O> {
   readonly type: 'mutation'
   /**
    * The inner schema of the mutation.
