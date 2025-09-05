@@ -1,5 +1,6 @@
 import { ArraySchema } from './array'
 import { BooleanSchema } from './boolean'
+import { DateSchema } from './date'
 import { EnumSchema } from './enum'
 import { NumberSchema } from './number'
 import { ObjectSchema } from './object'
@@ -19,4 +20,5 @@ export const t: T = {
   enum: (schema, message) => new EnumSchema(schema, message),
   record: (schema, message) => new RecordSchema(schema, message),
   union: schemas => new UnionSchema(schemas),
+  date: message => new DateSchema(message),
 }

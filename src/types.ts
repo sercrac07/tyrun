@@ -51,6 +51,10 @@ export interface T {
    * [API Reference](https://github.com/sercrac07/tyrun#union-validator)
    */
   union: <S extends Tyrun<any>>(schemas: S[]) => TyrunUnion<S>
+  /**
+   * Validates that the input is a date.
+   */
+  date: (message?: string) => TyrunDate
 }
 
 export interface Tyrun<T> {
@@ -180,6 +184,21 @@ export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: str
 }
 export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
   readonly type: 'union'
+}
+export interface TyrunDate extends TyrunBase<Date> {
+  readonly type: 'date'
+  /**
+   * Coerces the input value to a date.
+   */
+  coerce(): this
+  /**
+   * Sets the minimum date of the date.
+   */
+  min(date: Date, message?: string): this
+  /**
+   * Sets the maximum date of the date.
+   */
+  max(date: Date, message?: string): this
 }
 export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Output<S> | undefined> {
   readonly type: 'optional'
