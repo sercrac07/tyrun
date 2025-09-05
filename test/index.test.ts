@@ -421,9 +421,9 @@ describe('file', () => {
     expect(t.file).toBeDefined()
   })
 
-  it('should parse', () => {
-    const file = new File(['12345'], 'file.txt', { type: 'text/plain' })
+  const file = new File(['12345'], 'file.txt', { type: 'text/plain' })
 
+  it('should parse', () => {
     expect(t.file().parse(file)).toEqual(generateSuccess(file))
     expect(t.file().optional().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.file().nullable().parse(null)).toEqual(generateSuccess(null))
@@ -445,12 +445,24 @@ describe('file', () => {
         .file()
         .transform(v => new File([v], v.name.toUpperCase()))
         .parse(file)
-    ).toEqual(generateSuccess(new File([file], file.name.toUpperCase()))) // Posible error (when created the new file, property created at might be different)
+    ).toEqual(generateSuccess(new File([file], file.name.toUpperCase()))) // Posible error (when created the new file, property `lastModified` might be different)
 
     expect(t.file().type).toBe('file')
 
     expect(t.file().min(5).parse(file)).toEqual(generateSuccess(file))
     expect(t.file().max(5).parse(file)).toEqual(generateSuccess(file))
     expect(t.file().types(['text/plain']).parse(file)).toEqual(generateSuccess(file))
+  })
+
+  it("shouldn't parse", () => {
+    expect(t.file().parse('file.txt')).toEqual(generateError('Value must be a file'))
+    expect(t.file().parse(123)).toEqual(generateError('Value must be a file'))
+    expect(t.file().parse(true)).toEqual(generateError('Value must be a file'))
+    expect(t.file().parse({ hello: 18 })).toEqual(generateError('Value must be a file'))
+    expect(t.file().parse([1, 18])).toEqual(generateError('Value must be a file'))
+
+    expect(t.file().min(6).parse(file)).toEqual(generateError('Value must be at least 6 bytes'))
+    expect(t.file().max(4).parse(file)).toEqual(generateError('Value must be at most 4 bytes'))
+    expect(t.file().types(['image/png']).parse(file)).toEqual(generateError('Value must be one of the following types: image/png'))
   })
 })
