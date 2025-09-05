@@ -149,3 +149,14 @@ t.date().max(new Date('2025-09-05'))
 // Coerce input to be a date
 t.date().coerce()
 ```
+
+### File
+
+Validates that the input is a file.
+
+```ts
+t.file()
+t.file().min(10)
+t.file().max(100)
+t.file().types(['image/png', 'image/jpeg'])
+```
