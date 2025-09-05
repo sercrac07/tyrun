@@ -415,3 +415,42 @@ describe('date', () => {
     expect(t.date().max(new Date('2025-09-05')).parse(new Date('2026-09-05'))).toEqual(generateError('Value must be less than Fri Sep 05 2025'))
   })
 })
+
+describe('file', () => {
+  it('should be defined', () => {
+    expect(t.file).toBeDefined()
+  })
+
+  it('should parse', () => {
+    const file = new File(['12345'], 'file.txt', { type: 'text/plain' })
+
+    expect(t.file().parse(file)).toEqual(generateSuccess(file))
+    expect(t.file().optional().parse(undefined)).toEqual(generateSuccess(undefined))
+    expect(t.file().nullable().parse(null)).toEqual(generateSuccess(null))
+    expect(t.file().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
+    expect(
+      t
+        .file()
+        .mutate(v => v.name)
+        .parse(file)
+    ).toEqual(generateSuccess('file.txt'))
+    expect(
+      t
+        .file()
+        .refine(v => v.size === 5)
+        .parse(file)
+    ).toEqual(generateSuccess(file))
+    expect(
+      t
+        .file()
+        .mutate(v => new File([v], v.name.toUpperCase()))
+        .parse(file)
+    ).toEqual(generateSuccess(new File([file], file.name.toUpperCase()))) // Posible error (when created the new file, property created at might be different)
+
+    expect(t.file().type).toBe('file')
+
+    expect(t.file().min(5).parse(file)).toEqual(generateSuccess(file))
+    expect(t.file().max(5).parse(file)).toEqual(generateSuccess(file))
+    expect(t.file().types(['text/plain']).parse(file)).toEqual(generateSuccess(file))
+  })
+})
