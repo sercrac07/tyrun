@@ -136,3 +136,16 @@ Validates that the input is one of the defined union schemas.
 ```ts
 t.union([t.string(), t.number()])
 ```
+
+### Date validator
+
+Validates that the input is a date.
+
+```ts
+t.date()
+t.date().min(new Date('2025-09-05'))
+t.date().max(new Date('2025-09-05'))
+
+// Coerce input to be a date
+t.date().coerce()
+```
