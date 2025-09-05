@@ -53,6 +53,8 @@ export interface T {
   union: <S extends Tyrun<any>>(schemas: S[]) => TyrunUnion<S>
   /**
    * Validates that the input is a date.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#date-validator)
    */
   date: (message?: string) => TyrunDate
 }
