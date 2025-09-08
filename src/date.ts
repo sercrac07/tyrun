@@ -29,7 +29,7 @@ export class DateSchema extends BaseSchema<Date> implements TyrunDate {
     this.validators.push(value => (value >= date ? null : message))
     return this
   }
-  public max(date: Date, message: string = `Value must be less than ${date.toDateString()}`) {
+  public max(date: Date, message: string = `Value must be lower than ${date.toDateString()}`) {
     this.validators.push(value => (value <= date ? null : message))
     return this
   }
