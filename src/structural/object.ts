@@ -28,4 +28,22 @@ export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseS
     const v = this.runTransformers(output as TypeFromShape<S>)
     return { data: v }
   }
+  public override async parseAsync(value: unknown): Promise<ParseResult<TypeFromShape<S>>> {
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [this.message] }
+
+    const errors: string[] = []
+    const output: Record<string, any> = {}
+
+    for (const [key, schema] of Object.entries(this.schema)) {
+      const res = await schema.parseAsync((value as any)[key])
+      if (res.errors) errors.push(...res.errors)
+      else output[key] = res.data
+    }
+
+    errors.push(...(await this.runValidatorsAsync(output as TypeFromShape<S>)))
+    if (errors.length) return { errors }
+
+    const v = await this.runTransformersAsync(output as TypeFromShape<S>)
+    return { data: v }
+  }
 }

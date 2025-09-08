@@ -28,4 +28,22 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
     const v = this.runTransformers(output)
     return { data: v }
   }
+  public override async parseAsync(value: unknown): Promise<ParseResult<{ [key: string]: Output<S> }>> {
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [this.message] }
+
+    const errors: string[] = []
+    const output: Record<string, Output<S>> = {}
+
+    for (const [key, val] of Object.entries(value)) {
+      const res = await this.schema.parseAsync(val)
+      if (res.errors) errors.push(...res.errors)
+      else output[key] = res.data
+    }
+
+    errors.push(...(await this.runValidatorsAsync(output)))
+    if (errors.length) return { errors }
+
+    const v = await this.runTransformersAsync(output)
+    return { data: v }
+  }
 }

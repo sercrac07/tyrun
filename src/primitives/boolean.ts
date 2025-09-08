@@ -20,6 +20,17 @@ export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
     const v = this.runTransformers(value)
     return { data: v }
   }
+  public override async parseAsync(value: unknown): Promise<ParseResult<boolean>> {
+    if (this.__coerce) value = Boolean(value)
+
+    if (typeof value !== 'boolean') return { errors: [this.message] }
+
+    const errors = await this.runValidatorsAsync(value)
+    if (errors.length) return { errors }
+
+    const v = await this.runTransformersAsync(value)
+    return { data: v }
+  }
   public coerce(): this {
     this.__coerce = true
     return this

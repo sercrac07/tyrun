@@ -20,17 +20,28 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
     const v = this.runTransformers(value)
     return { data: v }
   }
+  public override async parseAsync(value: unknown): Promise<ParseResult<number>> {
+    if (this.__coerce) value = Number(value)
+
+    if (typeof value !== 'number') return { errors: [this.message] }
+
+    const errors = await this.runValidatorsAsync(value)
+    if (errors.length) return { errors }
+
+    const v = await this.runTransformersAsync(value)
+    return { data: v }
+  }
   public coerce(): this {
     this.__coerce = true
     return this
   }
 
   public min(amount: number, message: string = `Value must be greater or equal than ${amount}`): this {
-    this.validators.push(v => (v >= amount ? null : message))
+    this.validators.push([v => v >= amount, message])
     return this
   }
   public max(amount: number, message: string = `Value must be lower or equal than ${amount}`): this {
-    this.validators.push(v => (v <= amount ? null : message))
+    this.validators.push([v => v <= amount, message])
     return this
   }
 }

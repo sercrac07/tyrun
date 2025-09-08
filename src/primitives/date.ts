@@ -20,17 +20,28 @@ export class DateSchema extends BaseSchema<Date> implements TyrunDate {
     const v = this.runTransformers(value)
     return { data: v }
   }
+  public override async parseAsync(value: unknown): Promise<ParseResult<Date>> {
+    if (this.__coerce) value = new Date(value as any)
+
+    if (!(value instanceof Date)) return { errors: [this.message] }
+
+    const errors = await this.runValidatorsAsync(value)
+    if (errors.length) return { errors }
+
+    const v = await this.runTransformersAsync(value)
+    return { data: v }
+  }
   public coerce(): this {
     this.__coerce = true
     return this
   }
 
   public min(date: Date, message: string = `Value must be greater than ${date.toDateString()}`) {
-    this.validators.push(value => (value >= date ? null : message))
+    this.validators.push([value => value >= date, message])
     return this
   }
   public max(date: Date, message: string = `Value must be lower than ${date.toDateString()}`) {
-    this.validators.push(value => (value <= date ? null : message))
+    this.validators.push([value => value <= date, message])
     return this
   }
 }

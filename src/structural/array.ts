@@ -28,14 +28,32 @@ export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> i
     const v = this.runTransformers(output)
     return { data: v }
   }
+  public override async parseAsync(value: unknown): Promise<ParseResult<Output<S>[]>> {
+    if (!Array.isArray(value)) return { errors: [this.message] }
+
+    const errors: string[] = []
+    const output: Output<S>[] = []
+
+    for (const v of value) {
+      const res = await this.schema.parseAsync(v)
+      if (res.errors) errors.push(...res.errors)
+      else output.push(res.data)
+    }
+
+    errors.push(...(await this.runValidatorsAsync(output)))
+    if (errors.length) return { errors }
+
+    const v = await this.runTransformersAsync(output)
+    return { data: v }
+  }
 
   public min(length: number, message: string = `Value must contain at least ${length} items`): this {
-    this.validators.push(v => (v.length >= length ? null : message))
+    this.validators.push([v => v.length >= length, message])
     return this
   }
 
   public max(length: number, message: string = `Value must contain at most ${length} items`): this {
-    this.validators.push(v => (v.length <= length ? null : message))
+    this.validators.push([v => v.length <= length, message])
     return this
   }
 }

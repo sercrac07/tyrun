@@ -69,8 +69,14 @@ export interface Tyrun<T> {
   readonly meta: TyrunMeta
   /**
    * Validates the input value against the schema.
+   *
+   * All asyncronous validators and transformers will be ignored, and the schema will be validated synchronously.
    */
   parse(value: unknown): ParseResult<T>
+  /**
+   * Validates the input value against the schema asynchronously.
+   */
+  parseAsync(value: unknown): Promise<ParseResult<T>>
 }
 
 export interface TyrunMeta {
@@ -102,15 +108,15 @@ export interface TyrunBase<T> extends Tyrun<T> {
   /**
    * Add custom validation logic to the schema.
    */
-  refine(predicate: (value: T) => boolean, message?: string): this
+  refine(predicate: (value: T) => MaybePromise<boolean>, message?: string): this
   /**
    * Transforms the input value after validation.
    */
-  transform(transformer: (value: T) => T): this
+  transform(transformer: (value: T) => MaybePromise<T>): this
   /**
    * Transforms the input value into a new value after the validation and transformation.
    */
-  mutate<O>(mutation: (value: T) => O): TyrunMutation<this, O>
+  mutate<O>(mutation: (value: T) => MaybePromise<O>): TyrunMutation<this, O>
 }
 
 export interface TyrunString extends TyrunBase<string> {
@@ -267,6 +273,7 @@ export interface TyrunMutation<I extends TyrunBase<any> | TyrunOptional<any> | T
 }
 
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: T[K] } : T
+export type MaybePromise<T> = T | Promise<T>
 
 /**
  * Infers the output type of a schema.

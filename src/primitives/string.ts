@@ -20,22 +20,33 @@ export class StringSchema extends BaseSchema<string> implements TyrunString {
     const v = this.runTransformers(value)
     return { data: v }
   }
+  public override async parseAsync(value: unknown): Promise<ParseResult<string>> {
+    if (this.__coerce) value = String(value)
+
+    if (typeof value !== 'string') return { errors: [this.message] }
+
+    const errors = await this.runValidatorsAsync(value)
+    if (errors.length) return { errors }
+
+    const v = await this.runTransformersAsync(value)
+    return { data: v }
+  }
   public coerce(): this {
     this.__coerce = true
     return this
   }
 
   public min(length: number, message: string = `Value must be at least ${length} characters long`): this {
-    this.validators.push(v => (v.length >= length ? null : message))
+    this.validators.push([v => v.length >= length, message])
     return this
   }
   public max(length: number, message: string = `Value must be at most ${length} characters long`): this {
-    this.validators.push(v => (v.length <= length ? null : message))
+    this.validators.push([v => v.length <= length, message])
     return this
   }
 
   public regex(regex: RegExp, message: string = `Value does not match regex: ${regex}`): this {
-    this.validators.push(v => (regex.test(v) ? null : message))
+    this.validators.push([v => regex.test(v), message])
     return this
   }
 }

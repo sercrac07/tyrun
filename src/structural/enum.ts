@@ -19,4 +19,13 @@ export class EnumSchema<S extends string | number> extends BaseSchema<S> impleme
     const v = this.runTransformers(value as S)
     return { data: v }
   }
+  public override async parseAsync(value: unknown): Promise<ParseResult<S>> {
+    if (!this.schema.includes(value as any)) return { errors: [this.message] }
+
+    const errors = await this.runValidatorsAsync(value as S)
+    if (errors.length) return { errors }
+
+    const v = await this.runTransformersAsync(value as S)
+    return { data: v }
+  }
 }

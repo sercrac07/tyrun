@@ -1,4 +1,4 @@
-import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunMutation, TyrunNullish } from '../types'
+import type { MaybePromise, Output, ParseResult, Tyrun, TyrunMeta, TyrunMutation, TyrunNullish } from '../types'
 import { MutationSchema } from './mutation'
 
 export class NullishSchema<S extends Tyrun<any>> implements TyrunNullish<S> {
@@ -16,8 +16,12 @@ export class NullishSchema<S extends Tyrun<any>> implements TyrunNullish<S> {
     if (value === undefined || value === null) return { data: value }
     return this.schema.parse(value)
   }
+  public async parseAsync(value: unknown): Promise<ParseResult<Output<S> | null | undefined>> {
+    if (value === undefined || value === null) return { data: value }
+    return await this.schema.parseAsync(value)
+  }
 
-  public mutate<O>(mutation: (value: Output<S> | null | undefined) => O): TyrunMutation<this, O> {
+  public mutate<O>(mutation: (value: Output<S> | null | undefined) => MaybePromise<O>): TyrunMutation<this, O> {
     return new MutationSchema(this, mutation)
   }
 }
