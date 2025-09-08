@@ -17,6 +17,12 @@ describe('object', () => {
     expect(t.object(schema).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.object(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.object(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(
+      t
+        .object(schema)
+        .transform(async v => ({ ...v, a: v.a.toUpperCase() }))
+        .parse(data)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
@@ -25,6 +31,15 @@ describe('object', () => {
     expect(t.object(schema).parse(1)).toEqual(generateError('Value must be an object'))
     expect(t.object(schema).parse(true)).toEqual(generateError('Value must be an object'))
     expect(t.object(schema).parse([])).toEqual(generateError('Value must be an object'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .object(schema)
+        .transform(async v => ({ ...v, a: v.a.toUpperCase() }))
+        .parseAsync(data)
+    ).toEqual(generateSuccess({ ...data, a: data.a.toUpperCase() }))
   })
 
   it('should validate', () => {

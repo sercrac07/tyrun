@@ -16,6 +16,12 @@ describe('number', () => {
     expect(t.number().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.number().nullish().parse(null)).toEqual(generateSuccess(null))
     expect(t.number().coerce().parse('5')).toEqual(generateSuccess(data))
+    expect(
+      t
+        .number()
+        .transform(async v => v * 2)
+        .parse(data)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
@@ -23,6 +29,15 @@ describe('number', () => {
     expect(t.number().parse(true)).toEqual(generateError('Value must be a number'))
     expect(t.number().parse({})).toEqual(generateError('Value must be a number'))
     expect(t.number().parse([])).toEqual(generateError('Value must be a number'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .number()
+        .transform(async v => v * 2)
+        .parseAsync(data)
+    ).toEqual(generateSuccess(data * 2))
   })
 
   it('should validate', () => {

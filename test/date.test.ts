@@ -16,6 +16,12 @@ describe('number', () => {
     expect(t.date().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.date().nullish().parse(null)).toEqual(generateSuccess(null))
     expect(t.date().coerce().parse('2025-09-08')).toEqual(generateSuccess(data))
+    expect(
+      t
+        .date()
+        .transform(async v => new Date(v.getTime() + 1000 * 60 * 60 * 24))
+        .parse(data)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
@@ -24,6 +30,15 @@ describe('number', () => {
     expect(t.date().parse(true)).toEqual(generateError('Value must be a date'))
     expect(t.date().parse({})).toEqual(generateError('Value must be a date'))
     expect(t.date().parse([])).toEqual(generateError('Value must be a date'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .date()
+        .transform(async v => new Date(v.getTime() + 1000 * 60 * 60 * 24))
+        .parseAsync(data)
+    ).toEqual(generateSuccess(new Date(data.getTime() + 1000 * 60 * 60 * 24)))
   })
 
   it('should validate', () => {

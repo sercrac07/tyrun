@@ -17,6 +17,12 @@ describe('array', () => {
     expect(t.array(schema).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.array(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.array(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(
+      t
+        .array(schema)
+        .transform(async v => v.map(item => item.toUpperCase()))
+        .parse(data)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
@@ -25,6 +31,15 @@ describe('array', () => {
     expect(t.array(schema).parse(1)).toEqual(generateError('Value must be an array'))
     expect(t.array(schema).parse(true)).toEqual(generateError('Value must be an array'))
     expect(t.array(schema).parse({})).toEqual(generateError('Value must be an array'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .array(schema)
+        .transform(async v => v.map(item => item.toUpperCase()))
+        .parseAsync(data)
+    ).toEqual(generateSuccess(data.map(item => item.toUpperCase())))
   })
 
   it('should validate', () => {

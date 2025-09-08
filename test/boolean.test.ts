@@ -17,6 +17,12 @@ describe('boolean', () => {
     expect(t.boolean().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.boolean().nullish().parse(null)).toEqual(generateSuccess(null))
     expect(t.boolean().coerce().parse('string')).toEqual(generateSuccess(data))
+    expect(
+      t
+        .boolean()
+        .transform(async v => !v)
+        .parse(data)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
@@ -24,6 +30,15 @@ describe('boolean', () => {
     expect(t.boolean().parse(1)).toEqual(generateError('Value must be a boolean'))
     expect(t.boolean().parse({})).toEqual(generateError('Value must be a boolean'))
     expect(t.boolean().parse([])).toEqual(generateError('Value must be a boolean'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .boolean()
+        .transform(async v => !v)
+        .parseAsync(data)
+    ).toEqual(generateSuccess(!data))
   })
 
   it('should validate', () => {

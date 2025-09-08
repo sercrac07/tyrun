@@ -16,6 +16,12 @@ describe('string', () => {
     expect(t.string().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.string().nullish().parse(null)).toEqual(generateSuccess(null))
     expect(t.string().coerce().parse(1)).toEqual(generateSuccess('1'))
+    expect(
+      t
+        .string()
+        .transform(async v => v.toUpperCase())
+        .parse(data)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
@@ -23,6 +29,15 @@ describe('string', () => {
     expect(t.string().parse(true)).toEqual(generateError('Value must be a string'))
     expect(t.string().parse({})).toEqual(generateError('Value must be a string'))
     expect(t.string().parse([])).toEqual(generateError('Value must be a string'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .string()
+        .transform(async v => v.toUpperCase())
+        .parseAsync(data)
+    ).toEqual(generateSuccess(data.toUpperCase()))
   })
 
   it('should validate', () => {

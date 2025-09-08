@@ -15,6 +15,12 @@ describe('file', () => {
     expect(t.file().nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.file().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.file().nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(
+      t
+        .file()
+        .transform(async v => new File([v], v.name.toUpperCase(), { type: v.type, lastModified: v.lastModified }))
+        .parse(data)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
@@ -23,6 +29,15 @@ describe('file', () => {
     expect(t.file().parse(true)).toEqual(generateError('Value must be a file'))
     expect(t.file().parse({})).toEqual(generateError('Value must be a file'))
     expect(t.file().parse([])).toEqual(generateError('Value must be a file'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .file()
+        .transform(async v => new File([v], v.name.toUpperCase(), { type: v.type, lastModified: v.lastModified }))
+        .parseAsync(data)
+    ).toEqual(generateSuccess(new File([data], data.name.toUpperCase(), { type: data.type, lastModified: data.lastModified })))
   })
 
   it('should validate', () => {

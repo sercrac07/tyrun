@@ -16,6 +16,12 @@ describe('enum', () => {
     expect(t.enum(schema).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.enum(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.enum(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(
+      t
+        .enum(schema)
+        .transform(async v => (v === 'a' ? 'b' : 'c'))
+        .parse(data)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
@@ -25,6 +31,15 @@ describe('enum', () => {
     expect(t.enum(schema).parse(true)).toEqual(generateError('Value must be one from the options: a, b, c'))
     expect(t.enum(schema).parse({})).toEqual(generateError('Value must be one from the options: a, b, c'))
     expect(t.enum(schema).parse([])).toEqual(generateError('Value must be one from the options: a, b, c'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .enum(schema)
+        .transform(async v => (v === 'a' ? 'b' : 'c'))
+        .parseAsync(data)
+    ).toEqual(generateSuccess('b'))
   })
 
   it('should validate', () => {

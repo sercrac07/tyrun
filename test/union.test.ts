@@ -18,12 +18,39 @@ describe('union', () => {
     expect(t.union(schema).nullable().parse(null)).toEqual(generateSuccess(null))
     expect(t.union(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
     expect(t.union(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(
+      t
+        .union(schema)
+        .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
+        .parse(dataString)
+    ).toEqual(generateSuccess(dataString))
+    expect(
+      t
+        .union(schema)
+        .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
+        .parse(dataNumber)
+    ).toEqual(generateSuccess(dataNumber))
   })
 
   it('should not parse', () => {
     expect(t.union(schema).parse(true)).toEqual(generateError('Value must be a string', 'Value must be a number'))
     expect(t.union(schema).parse({})).toEqual(generateError('Value must be a string', 'Value must be a number'))
     expect(t.union(schema).parse([])).toEqual(generateError('Value must be a string', 'Value must be a number'))
+  })
+
+  it('should parse async', async () => {
+    expect(
+      await t
+        .union(schema)
+        .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
+        .parseAsync(dataString)
+    ).toEqual(generateSuccess(dataString.toUpperCase()))
+    expect(
+      await t
+        .union(schema)
+        .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
+        .parseAsync(dataNumber)
+    ).toEqual(generateSuccess(dataNumber * 2))
   })
 
   it('should validate', () => {
