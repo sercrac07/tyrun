@@ -12,13 +12,13 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
   public override parse(value: unknown): ParseResult<number> {
     if (this.__coerce) value = Number(value)
 
-    if (typeof value !== 'number') return { success: false, errors: [this.message] }
+    if (typeof value !== 'number') return { errors: [this.message] }
 
     const errors = this.runValidators(value)
-    if (errors.length) return { success: false, errors }
+    if (errors.length) return { errors }
 
     const v = this.runTransformers(value)
-    return { success: true, data: v }
+    return { data: v }
   }
   public coerce(): this {
     this.__coerce = true

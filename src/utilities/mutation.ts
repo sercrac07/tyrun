@@ -12,8 +12,8 @@ export class MutationSchema<I extends TyrunBase<any> | TyrunOptional<any> | Tyru
 
   parse(value: unknown): ParseResult<O> {
     const res = this.schema.parse(value)
-    if (!res.success) return res
+    if (res.errors) return res
 
-    return { success: true, data: this.mutation(res.data) }
+    return { data: this.mutation(res.data) }
   }
 }

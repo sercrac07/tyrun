@@ -13,7 +13,7 @@ export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
   }
 
   public parse(value: unknown): ParseResult<Output<S> | undefined> {
-    if (value === undefined) return { success: true, data: value }
+    if (value === undefined) return { data: value }
     return this.schema.parse(value)
   }
 

@@ -11,22 +11,22 @@ export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> i
   }
 
   public override parse(value: unknown): ParseResult<Output<S>[]> {
-    if (!Array.isArray(value)) return { success: false, errors: [this.message] }
+    if (!Array.isArray(value)) return { errors: [this.message] }
 
     const errors: string[] = []
-    const output: any[] = []
+    const output: Output<S>[] = []
 
     for (const v of value) {
       const res = this.schema.parse(v)
-      if (!res.success) errors.push(...res.errors)
-      else output.push(v)
+      if (res.errors) errors.push(...res.errors)
+      else output.push(res.data)
     }
 
     errors.push(...this.runValidators(output))
-    if (errors.length) return { success: false, errors }
+    if (errors.length) return { errors }
 
     const v = this.runTransformers(output)
-    return { success: true, data: v }
+    return { data: v }
   }
 
   public min(length: number, message: string = `Value must contain at least ${length} items`): this {

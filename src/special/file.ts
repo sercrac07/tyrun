@@ -9,13 +9,13 @@ export class FileSchema extends BaseSchema<File> implements TyrunFile {
   }
 
   public override parse(value: unknown): ParseResult<File> {
-    if (!(value instanceof File)) return { success: false, errors: [this.message] }
+    if (!(value instanceof File)) return { errors: [this.message] }
 
     const errors = this.runValidators(value)
-    if (errors.length) return { success: false, errors }
+    if (errors.length) return { errors }
 
     const v = this.runTransformers(value)
-    return { success: true, data: v }
+    return { data: v }
   }
 
   public min(size: number, message: string = `Value must be at least ${size} bytes`) {

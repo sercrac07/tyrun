@@ -12,13 +12,13 @@ export class DateSchema extends BaseSchema<Date> implements TyrunDate {
   public override parse(value: unknown): ParseResult<Date> {
     if (this.__coerce) value = new Date(value as any)
 
-    if (!(value instanceof Date)) return { success: false, errors: [this.message] }
+    if (!(value instanceof Date)) return { errors: [this.message] }
 
     const errors = this.runValidators(value)
-    if (errors.length) return { success: false, errors }
+    if (errors.length) return { errors }
 
     const v = this.runTransformers(value)
-    return { success: true, data: v }
+    return { data: v }
   }
   public coerce(): this {
     this.__coerce = true

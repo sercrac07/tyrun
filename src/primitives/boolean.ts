@@ -12,13 +12,13 @@ export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
   public override parse(value: unknown): ParseResult<boolean> {
     if (this.__coerce) value = Boolean(value)
 
-    if (typeof value !== 'boolean') return { success: false, errors: [this.message] }
+    if (typeof value !== 'boolean') return { errors: [this.message] }
 
     const errors = this.runValidators(value)
-    if (errors.length) return { success: false, errors }
+    if (errors.length) return { errors }
 
     const v = this.runTransformers(value)
-    return { success: true, data: v }
+    return { data: v }
   }
   public coerce(): this {
     this.__coerce = true

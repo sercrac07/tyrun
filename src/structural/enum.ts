@@ -11,12 +11,12 @@ export class EnumSchema<S extends string | number> extends BaseSchema<S> impleme
   }
 
   public override parse(value: unknown): ParseResult<S> {
-    if (!this.schema.includes(value as any)) return { success: false, errors: [this.message] }
+    if (!this.schema.includes(value as any)) return { errors: [this.message] }
 
     const errors = this.runValidators(value as S)
-    if (errors.length) return { success: false, errors }
+    if (errors.length) return { errors }
 
     const v = this.runTransformers(value as S)
-    return { success: true, data: v }
+    return { data: v }
   }
 }

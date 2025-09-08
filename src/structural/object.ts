@@ -11,21 +11,21 @@ export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseS
   }
 
   public override parse(value: unknown): ParseResult<TypeFromShape<S>> {
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { success: false, errors: [this.message] }
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [this.message] }
 
     const errors: string[] = []
     const output: Record<string, any> = {}
 
     for (const [key, schema] of Object.entries(this.schema)) {
       const res = schema.parse((value as any)[key])
-      if (!res.success) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors)
       else output[key] = res.data
     }
 
     errors.push(...this.runValidators(output as TypeFromShape<S>))
-    if (errors.length) return { success: false, errors }
+    if (errors.length) return { errors }
 
     const v = this.runTransformers(output as TypeFromShape<S>)
-    return { success: true, data: v }
+    return { data: v }
   }
 }

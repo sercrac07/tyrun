@@ -12,7 +12,7 @@ export class NullableSchema<S extends Tyrun<any>> implements TyrunNullable<S> {
   }
 
   public parse(value: unknown): ParseResult<Output<S> | null> {
-    if (value === null) return { success: true, data: value }
+    if (value === null) return { data: value }
     return this.schema.parse(value)
   }
 

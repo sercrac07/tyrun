@@ -13,17 +13,17 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> imp
 
     for (const schema of this.schemas) {
       const res = schema.parse(value)
-      if (!res.success) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors)
       else {
         const validatorErrors = this.runValidators(res.data)
         if (validatorErrors.length) errors.push(...validatorErrors)
         else {
           const v = this.runTransformers(res.data)
-          return { success: true, data: v }
+          return { data: v }
         }
       }
     }
 
-    return { success: false, errors }
+    return { errors }
   }
 }

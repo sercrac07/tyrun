@@ -13,7 +13,7 @@ export class NullishSchema<S extends Tyrun<any>> implements TyrunNullish<S> {
   }
 
   public parse(value: unknown): ParseResult<Output<S> | null | undefined> {
-    if (value === undefined || value === null) return { success: true, data: value }
+    if (value === undefined || value === null) return { data: value }
     return this.schema.parse(value)
   }
 

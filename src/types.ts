@@ -1,5 +1,5 @@
-type ParseError = { success: false; errors: string[] }
-type ParseSuccess<T> = { success: true; data: T }
+type ParseError = { data?: never; errors: string[] }
+type ParseSuccess<T> = { data: T; errors?: never }
 export type ParseResult<T> = ParseError | ParseSuccess<T>
 
 export interface T {

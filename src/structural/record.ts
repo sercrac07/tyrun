@@ -11,21 +11,21 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
   }
 
   public override parse(value: unknown): ParseResult<{ [key: string]: Output<S> }> {
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { success: false, errors: [this.message] }
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [this.message] }
 
     const errors: string[] = []
     const output: Record<string, Output<S>> = {}
 
     for (const [key, val] of Object.entries(value)) {
       const res = this.schema.parse(val)
-      if (!res.success) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors)
       else output[key] = res.data
     }
 
     errors.push(...this.runValidators(output))
-    if (errors.length) return { success: false, errors }
+    if (errors.length) return { errors }
 
     const v = this.runTransformers(output)
-    return { success: true, data: v }
+    return { data: v }
   }
 }
