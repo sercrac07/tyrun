@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { Output, ParseResult, Tyrun, TyrunUnion } from './types'
+import { BaseSchema } from '../core/base'
+import type { Output, ParseResult, Tyrun, TyrunUnion } from '../types'
 
 export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> implements TyrunUnion<S> {
   public readonly type = 'union'

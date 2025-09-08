@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { ParseResult, TyrunFile } from './types'
+import { BaseSchema } from '../core/base'
+import type { ParseResult, TyrunFile } from '../types'
 
 export class FileSchema extends BaseSchema<File> implements TyrunFile {
   readonly type = 'file'

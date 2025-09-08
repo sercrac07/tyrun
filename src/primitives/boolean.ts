@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { ParseResult, TyrunBoolean } from './types'
+import { BaseSchema } from '../core/base'
+import type { ParseResult, TyrunBoolean } from '../types'
 
 export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
   public readonly type = 'boolean'

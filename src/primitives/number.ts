@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { ParseResult, TyrunNumber } from './types'
+import { BaseSchema } from '../core/base'
+import type { ParseResult, TyrunNumber } from '../types'
 
 export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
   public readonly type = 'number'

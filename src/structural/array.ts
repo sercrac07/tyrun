@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { Output, ParseResult, Tyrun, TyrunArray } from './types'
+import { BaseSchema } from '../core/base'
+import type { Output, ParseResult, Tyrun, TyrunArray } from '../types'
 
 export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> implements TyrunArray<S> {
   public readonly type = 'array'

@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { ParseResult, TyrunString } from './types'
+import { BaseSchema } from '../core/base'
+import type { ParseResult, TyrunString } from '../types'
 
 export class StringSchema extends BaseSchema<string> implements TyrunString {
   public readonly type = 'string'

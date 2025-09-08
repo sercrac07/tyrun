@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import { ParseResult, TyrunEnum } from './types'
+import { BaseSchema } from '../core/base'
+import { ParseResult, TyrunEnum } from '../types'
 
 export class EnumSchema<S extends string | number> extends BaseSchema<S> implements TyrunEnum<S> {
   public readonly type = 'enum'

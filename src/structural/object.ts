@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { ParseResult, TypeFromShape, Tyrun, TyrunObject } from './types'
+import { BaseSchema } from '../core/base'
+import type { ParseResult, TypeFromShape, Tyrun, TyrunObject } from '../types'
 
 export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseSchema<TypeFromShape<S>> implements TyrunObject<S> {
   public readonly type = 'object'

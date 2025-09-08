@@ -1,4 +1,4 @@
-import type { Output, ParseResult, TyrunBase, TyrunMeta, TyrunMutation, TyrunNullable, TyrunNullish, TyrunOptional } from './types'
+import type { Output, ParseResult, TyrunBase, TyrunMeta, TyrunMutation, TyrunNullable, TyrunNullish, TyrunOptional } from '../types'
 
 export class MutationSchema<I extends TyrunBase<any> | TyrunOptional<any> | TyrunNullable<any> | TyrunNullish<any>, O> implements TyrunMutation<I, O> {
   readonly type = 'mutation'

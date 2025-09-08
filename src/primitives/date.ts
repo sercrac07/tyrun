@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { ParseResult, TyrunDate } from './types'
+import { BaseSchema } from '../core/base'
+import type { ParseResult, TyrunDate } from '../types'
 
 export class DateSchema extends BaseSchema<Date> implements TyrunDate {
   public readonly type = 'date'

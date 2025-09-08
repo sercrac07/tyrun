@@ -1,5 +1,5 @@
+import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunMutation, TyrunOptional } from '../types'
 import { MutationSchema } from './mutation'
-import type { Output, ParseResult, Tyrun, TyrunMeta, TyrunMutation, TyrunOptional } from './types'
 
 export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
   public readonly type = 'optional'

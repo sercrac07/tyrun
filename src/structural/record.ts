@@ -1,5 +1,5 @@
-import { BaseSchema } from './base'
-import type { Output, ParseResult, Tyrun, TyrunRecord } from './types'
+import { BaseSchema } from '../core/base'
+import type { Output, ParseResult, Tyrun, TyrunRecord } from '../types'
 
 export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: string]: Output<S> }> implements TyrunRecord<S> {
   public readonly type = 'record'

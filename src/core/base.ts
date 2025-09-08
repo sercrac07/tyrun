@@ -1,8 +1,8 @@
-import { MutationSchema } from './mutation'
-import { NullableSchema } from './nullable'
-import { NullishSchema } from './nullish'
-import { OptionalSchema } from './optional'
-import type { ParseResult, TyrunBase, TyrunMeta, TyrunMutation, TyrunNullable, TyrunNullish, TyrunOptional } from './types'
+import type { ParseResult, TyrunBase, TyrunMeta, TyrunMutation, TyrunNullable, TyrunNullish, TyrunOptional } from '../types'
+import { MutationSchema } from '../utilities/mutation'
+import { NullableSchema } from '../utilities/nullable'
+import { NullishSchema } from '../utilities/nullish'
+import { OptionalSchema } from '../utilities/optional'
 
 export abstract class BaseSchema<T> implements TyrunBase<T> {
   public readonly meta: TyrunMeta = { name: null, description: null }
