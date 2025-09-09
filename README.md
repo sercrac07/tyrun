@@ -38,10 +38,10 @@ const usernameSchema = t
 // Check your data
 const usernameSafe = usernameSchema.parse('hello-world')
 
-if (usernameSafe.success) {
-  console.log(usernameSafe.data)
+if (usernameSafe.errors) {
+  console.error(usernameSafe.errors)
 } else {
-  console.log(usernameSafe.errors)
+  console.log(usernameSafe.data)
 }
 ```
 
@@ -81,6 +81,27 @@ t.boolean()
 
 // Coerce input to be a boolean
 t.boolean().coerce()
+```
+
+### Date validator
+
+Validates that the input is a date.
+
+```ts
+t.date()
+t.date().min(new Date('2025-09-05'))
+t.date().max(new Date('2025-09-05'))
+
+// Coerce input to be a date
+t.date().coerce()
+```
+
+### Literal validator
+
+Validates that the input is a literal value.
+
+```ts
+t.literal('Hello World!')
 ```
 
 ### Object validator
@@ -135,19 +156,6 @@ Validates that the input is one of the defined union schemas.
 
 ```ts
 t.union([t.string(), t.number()])
-```
-
-### Date validator
-
-Validates that the input is a date.
-
-```ts
-t.date()
-t.date().min(new Date('2025-09-05'))
-t.date().max(new Date('2025-09-05'))
-
-// Coerce input to be a date
-t.date().coerce()
 ```
 
 ### File validator
