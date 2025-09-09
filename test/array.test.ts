@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { t } from '../src'
+import { IssueCode, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
 describe('array', () => {
@@ -26,11 +26,11 @@ describe('array', () => {
   })
 
   it('should not parse', () => {
-    expect(t.array(schema).parse([1])).toEqual(generateError('Value must be a string'))
-    expect(t.array(schema).parse('string')).toEqual(generateError('Value must be an array'))
-    expect(t.array(schema).parse(1)).toEqual(generateError('Value must be an array'))
-    expect(t.array(schema).parse(true)).toEqual(generateError('Value must be an array'))
-    expect(t.array(schema).parse({})).toEqual(generateError('Value must be an array'))
+    expect(t.array(schema).parse([1])).toEqual(generateError({ message: 'Value must be a string', path: ['0'], code: IssueCode.InvalidType }))
+    expect(t.array(schema).parse('string')).toEqual(generateError({ message: 'Value must be an array', path: [], code: IssueCode.InvalidType }))
+    expect(t.array(schema).parse(1)).toEqual(generateError({ message: 'Value must be an array', path: [], code: IssueCode.InvalidType }))
+    expect(t.array(schema).parse(true)).toEqual(generateError({ message: 'Value must be an array', path: [], code: IssueCode.InvalidType }))
+    expect(t.array(schema).parse({})).toEqual(generateError({ message: 'Value must be an array', path: [], code: IssueCode.InvalidType }))
   })
 
   it('should parse async', async () => {
@@ -54,14 +54,14 @@ describe('array', () => {
   })
 
   it('should not validate', () => {
-    expect(t.array(schema).min(2).parse(data)).toEqual(generateError('Value must contain at least 2 items'))
-    expect(t.array(schema).max(0).parse(data)).toEqual(generateError('Value must contain at most 0 items'))
+    expect(t.array(schema).min(2).parse(data)).toEqual(generateError({ message: 'Value must contain at least 2 items', path: [], code: IssueCode.Min }))
+    expect(t.array(schema).max(0).parse(data)).toEqual(generateError({ message: 'Value must contain at most 0 items', path: [], code: IssueCode.Max }))
     expect(
       t
         .array(schema)
         .refine(v => v.length === 2)
         .parse(data)
-    ).toEqual(generateError('Refinement failed'))
+    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
   })
 
   it('should transform', () => {

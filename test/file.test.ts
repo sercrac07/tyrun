@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { t } from '../src'
+import { IssueCode, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
 describe('file', () => {
@@ -24,11 +24,11 @@ describe('file', () => {
   })
 
   it('should not parse', () => {
-    expect(t.file().parse('string')).toEqual(generateError('Value must be a file'))
-    expect(t.file().parse(5)).toEqual(generateError('Value must be a file'))
-    expect(t.file().parse(true)).toEqual(generateError('Value must be a file'))
-    expect(t.file().parse({})).toEqual(generateError('Value must be a file'))
-    expect(t.file().parse([])).toEqual(generateError('Value must be a file'))
+    expect(t.file().parse('string')).toEqual(generateError({ message: 'Value must be a file', path: [], code: IssueCode.InvalidType }))
+    expect(t.file().parse(5)).toEqual(generateError({ message: 'Value must be a file', path: [], code: IssueCode.InvalidType }))
+    expect(t.file().parse(true)).toEqual(generateError({ message: 'Value must be a file', path: [], code: IssueCode.InvalidType }))
+    expect(t.file().parse({})).toEqual(generateError({ message: 'Value must be a file', path: [], code: IssueCode.InvalidType }))
+    expect(t.file().parse([])).toEqual(generateError({ message: 'Value must be a file', path: [], code: IssueCode.InvalidType }))
   })
 
   it('should parse async', async () => {
@@ -53,15 +53,15 @@ describe('file', () => {
   })
 
   it('should not validate', () => {
-    expect(t.file().min(5).parse(data)).toEqual(generateError('Value must be at least 5 bytes'))
-    expect(t.file().max(3).parse(data)).toEqual(generateError('Value must be at most 3 bytes'))
-    expect(t.file().types(['image/png']).parse(data)).toEqual(generateError('Value must be one of the following types: image/png'))
+    expect(t.file().min(5).parse(data)).toEqual(generateError({ message: 'Value must be at least 5 bytes', path: [], code: IssueCode.Min }))
+    expect(t.file().max(3).parse(data)).toEqual(generateError({ message: 'Value must be at most 3 bytes', path: [], code: IssueCode.Max }))
+    expect(t.file().types(['image/png']).parse(data)).toEqual(generateError({ message: 'Value must be one of the following types: image/png', path: [], code: IssueCode.RefinementFailed }))
     expect(
       t
         .file()
         .refine(v => v.size === 5)
         .parse(data)
-    ).toEqual(generateError('Refinement failed'))
+    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
   })
 
   it('should transform', () => {

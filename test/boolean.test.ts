@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { t } from '../src'
+import { IssueCode, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
 describe('boolean', () => {
@@ -26,10 +26,10 @@ describe('boolean', () => {
   })
 
   it('should not parse', () => {
-    expect(t.boolean().parse('true')).toEqual(generateError('Value must be a boolean'))
-    expect(t.boolean().parse(1)).toEqual(generateError('Value must be a boolean'))
-    expect(t.boolean().parse({})).toEqual(generateError('Value must be a boolean'))
-    expect(t.boolean().parse([])).toEqual(generateError('Value must be a boolean'))
+    expect(t.boolean().parse('true')).toEqual(generateError({ message: 'Value must be a boolean', path: [], code: IssueCode.InvalidType }))
+    expect(t.boolean().parse(1)).toEqual(generateError({ message: 'Value must be a boolean', path: [], code: IssueCode.InvalidType }))
+    expect(t.boolean().parse({})).toEqual(generateError({ message: 'Value must be a boolean', path: [], code: IssueCode.InvalidType }))
+    expect(t.boolean().parse([])).toEqual(generateError({ message: 'Value must be a boolean', path: [], code: IssueCode.InvalidType }))
   })
 
   it('should parse async', async () => {
@@ -56,7 +56,7 @@ describe('boolean', () => {
         .boolean()
         .refine(v => v === false)
         .parse(data)
-    ).toEqual(generateError('Refinement failed'))
+    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
   })
 
   it('should transform', () => {

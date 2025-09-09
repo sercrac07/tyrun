@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { t } from '../src'
+import { IssueCode, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
 describe('record', () => {
@@ -26,10 +26,10 @@ describe('record', () => {
   })
 
   it('should not parse', () => {
-    expect(t.record(schema).parse('string')).toEqual(generateError('Value must be an object'))
-    expect(t.record(schema).parse(1)).toEqual(generateError('Value must be an object'))
-    expect(t.record(schema).parse(true)).toEqual(generateError('Value must be an object'))
-    expect(t.record(schema).parse([])).toEqual(generateError('Value must be an object'))
+    expect(t.record(schema).parse('string')).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
+    expect(t.record(schema).parse(1)).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
+    expect(t.record(schema).parse(true)).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
+    expect(t.record(schema).parse([])).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
   })
 
   it('should parse async', async () => {
@@ -56,7 +56,7 @@ describe('record', () => {
         .record(schema)
         .refine(v => v.a.length === 5)
         .parse(data)
-    ).toEqual(generateError('Refinement failed'))
+    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
   })
 
   it('should transform', () => {

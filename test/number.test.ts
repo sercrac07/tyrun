@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { t } from '../src'
+import { IssueCode, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
 describe('number', () => {
@@ -25,10 +25,10 @@ describe('number', () => {
   })
 
   it('should not parse', () => {
-    expect(t.number().parse('5')).toEqual(generateError('Value must be a number'))
-    expect(t.number().parse(true)).toEqual(generateError('Value must be a number'))
-    expect(t.number().parse({})).toEqual(generateError('Value must be a number'))
-    expect(t.number().parse([])).toEqual(generateError('Value must be a number'))
+    expect(t.number().parse('5')).toEqual(generateError({ message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
+    expect(t.number().parse(true)).toEqual(generateError({ message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
+    expect(t.number().parse({})).toEqual(generateError({ message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
+    expect(t.number().parse([])).toEqual(generateError({ message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
   })
 
   it('should parse async', async () => {
@@ -52,14 +52,14 @@ describe('number', () => {
   })
 
   it('should not validate', () => {
-    expect(t.number().min(6).parse(data)).toEqual(generateError('Value must be greater or equal than 6'))
-    expect(t.number().max(4).parse(data)).toEqual(generateError('Value must be lower or equal than 4'))
+    expect(t.number().min(6).parse(data)).toEqual(generateError({ message: 'Value must be greater or equal than 6', path: [], code: IssueCode.Min }))
+    expect(t.number().max(4).parse(data)).toEqual(generateError({ message: 'Value must be lower or equal than 4', path: [], code: IssueCode.Max }))
     expect(
       t
         .number()
         .refine(v => v === 6)
         .parse(data)
-    ).toEqual(generateError('Refinement failed'))
+    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
   })
 
   it('should transform', () => {

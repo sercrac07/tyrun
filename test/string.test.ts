@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { t } from '../src'
+import { IssueCode, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
 describe('string', () => {
@@ -25,10 +25,10 @@ describe('string', () => {
   })
 
   it('should not parse', () => {
-    expect(t.string().parse(1)).toEqual(generateError('Value must be a string'))
-    expect(t.string().parse(true)).toEqual(generateError('Value must be a string'))
-    expect(t.string().parse({})).toEqual(generateError('Value must be a string'))
-    expect(t.string().parse([])).toEqual(generateError('Value must be a string'))
+    expect(t.string().parse(1)).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }))
+    expect(t.string().parse(true)).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }))
+    expect(t.string().parse({})).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }))
+    expect(t.string().parse([])).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }))
   })
 
   it('should parse async', async () => {
@@ -58,20 +58,20 @@ describe('string', () => {
   })
 
   it('should not validate', () => {
-    expect(t.string().min(7).parse(data)).toEqual(generateError('Value must be at least 7 characters long'))
-    expect(t.string().max(5).parse(data)).toEqual(generateError('Value must be at most 5 characters long'))
+    expect(t.string().min(7).parse(data)).toEqual(generateError({ message: 'Value must be at least 7 characters long', path: [], code: IssueCode.Min }))
+    expect(t.string().max(5).parse(data)).toEqual(generateError({ message: 'Value must be at most 5 characters long', path: [], code: IssueCode.Max }))
     expect(
       t
         .string()
         .regex(/^[0-9]+$/)
         .parse(data)
-    ).toEqual(generateError('Value does not match regex: /^[0-9]+$/'))
+    ).toEqual(generateError({ message: 'Value does not match regex: /^[0-9]+$/', path: [], code: IssueCode.RefinementFailed }))
     expect(
       t
         .string()
         .refine(v => v.length === 5)
         .parse(data)
-    ).toEqual(generateError('Refinement failed'))
+    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
   })
 
   it('should transform', () => {

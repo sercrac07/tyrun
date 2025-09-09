@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { t } from '../src'
+import { IssueCode, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
 describe('date', () => {
@@ -25,11 +25,11 @@ describe('date', () => {
   })
 
   it('should not parse', () => {
-    expect(t.date().parse('2025-09-08')).toEqual(generateError('Value must be a date'))
-    expect(t.date().parse(5)).toEqual(generateError('Value must be a date'))
-    expect(t.date().parse(true)).toEqual(generateError('Value must be a date'))
-    expect(t.date().parse({})).toEqual(generateError('Value must be a date'))
-    expect(t.date().parse([])).toEqual(generateError('Value must be a date'))
+    expect(t.date().parse('2025-09-08')).toEqual(generateError({ message: 'Value must be a date', path: [], code: IssueCode.InvalidType }))
+    expect(t.date().parse(5)).toEqual(generateError({ message: 'Value must be a date', path: [], code: IssueCode.InvalidType }))
+    expect(t.date().parse(true)).toEqual(generateError({ message: 'Value must be a date', path: [], code: IssueCode.InvalidType }))
+    expect(t.date().parse({})).toEqual(generateError({ message: 'Value must be a date', path: [], code: IssueCode.InvalidType }))
+    expect(t.date().parse([])).toEqual(generateError({ message: 'Value must be a date', path: [], code: IssueCode.InvalidType }))
   })
 
   it('should parse async', async () => {
@@ -53,14 +53,14 @@ describe('date', () => {
   })
 
   it('should not validate', () => {
-    expect(t.date().min(new Date('2025-09-09')).parse(data)).toEqual(generateError('Value must be greater than Tue Sep 09 2025'))
-    expect(t.date().max(new Date('2025-09-07')).parse(data)).toEqual(generateError('Value must be lower than Sun Sep 07 2025'))
+    expect(t.date().min(new Date('2025-09-09')).parse(data)).toEqual(generateError({ message: 'Value must be greater than Tue Sep 09 2025', path: [], code: IssueCode.Min }))
+    expect(t.date().max(new Date('2025-09-07')).parse(data)).toEqual(generateError({ message: 'Value must be lower than Sun Sep 07 2025', path: [], code: IssueCode.Max }))
     expect(
       t
         .date()
         .refine(v => v.getTime() === new Date('2025-09-09').getTime())
         .parse(data)
-    ).toEqual(generateError('Refinement failed'))
+    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
   })
 
   it('should transform', () => {

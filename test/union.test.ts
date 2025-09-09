@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { t } from '../src'
+import { IssueCode, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
 describe('union', () => {
@@ -33,9 +33,9 @@ describe('union', () => {
   })
 
   it('should not parse', () => {
-    expect(t.union(schema).parse(true)).toEqual(generateError('Value must be a string', 'Value must be a number'))
-    expect(t.union(schema).parse({})).toEqual(generateError('Value must be a string', 'Value must be a number'))
-    expect(t.union(schema).parse([])).toEqual(generateError('Value must be a string', 'Value must be a number'))
+    expect(t.union(schema).parse(true)).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }, { message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
+    expect(t.union(schema).parse({})).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }, { message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
+    expect(t.union(schema).parse([])).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }, { message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
   })
 
   it('should parse async', async () => {
@@ -74,13 +74,13 @@ describe('union', () => {
         .union(schema)
         .refine(v => typeof v === 'number')
         .parse(dataString)
-    ).toEqual(generateError('Refinement failed', 'Value must be a number'))
+    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }, { message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
     expect(
       t
         .union(schema)
         .refine(v => typeof v === 'string')
         .parse(dataNumber)
-    ).toEqual(generateError('Value must be a string', 'Refinement failed'))
+    ).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }, { message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
   })
 
   it('should transform', () => {
