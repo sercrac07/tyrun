@@ -267,7 +267,7 @@ export interface TyrunOptional<S extends Tyrun<any>> extends Tyrun<Output<S> | u
   /**
    * Transforms the input value into a new value after the validation and transformation.
    */
-  mutate<O>(mutation: (value: Output<S> | undefined) => O): TyrunMutation<this, O>
+  mutate<O>(mutation: (value: Output<S> | undefined) => MaybePromise<O>): TyrunMutation<this, O>
 }
 export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Output<S> | null> {
   readonly type: 'nullable'
@@ -278,7 +278,7 @@ export interface TyrunNullable<S extends Tyrun<any>> extends Tyrun<Output<S> | n
   /**
    * Transforms the input value into a new value after the validation and transformation.
    */
-  mutate<O>(mutation: (value: Output<S> | null) => O): TyrunMutation<this, O>
+  mutate<O>(mutation: (value: Output<S> | null) => MaybePromise<O>): TyrunMutation<this, O>
 }
 export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Output<S> | null | undefined> {
   readonly type: 'nullish'
@@ -290,7 +290,7 @@ export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Output<S> | nu
   /**
    * Transforms the input value into a new value after the validation and transformation.
    */
-  mutate<O>(mutation: (value: Output<S> | null | undefined) => O): TyrunMutation<this, O>
+  mutate<O>(mutation: (value: Output<S> | null | undefined) => MaybePromise<O>): TyrunMutation<this, O>
 }
 export interface TyrunMutation<I extends TyrunBase<any> | TyrunOptional<any> | TyrunNullable<any> | TyrunNullish<any>, O> extends Tyrun<O> {
   __default: Output<I> | undefined
@@ -311,7 +311,7 @@ export type MaybePromise<T> = T | Promise<T>
 /**
  * Infers the output type of a schema.
  */
-export type Output<S extends Tyrun<any>> = S extends Tyrun<infer T> ? T : never
+export type Output<S extends Tyrun<any>> = S extends TyrunMutation<any, infer O> ? O : S extends Tyrun<infer T> ? T : never
 /**
  * Infers the input type of a schema.
  */
