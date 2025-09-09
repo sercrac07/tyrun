@@ -1,5 +1,6 @@
+import { IssueCode } from '../constants'
 import { BaseSchema } from '../core/base'
-import type { ParseResult, TypeFromShape, Tyrun, TyrunObject } from '../types'
+import type { Issue, ParseResult, TypeFromShape, Tyrun, TyrunObject } from '../types'
 
 export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseSchema<TypeFromShape<S>> implements TyrunObject<S> {
   public readonly type = 'object'
@@ -11,14 +12,14 @@ export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseS
   }
 
   public override parse(value: unknown): ParseResult<TypeFromShape<S>> {
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [this.message] }
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
-    const errors: string[] = []
+    const errors: Issue[] = []
     const output: Record<string, any> = {}
 
     for (const [key, schema] of Object.entries(this.schema)) {
       const res = schema.parse((value as any)[key])
-      if (res.errors) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [key, ...e.path] })))
       else output[key] = res.data
     }
 
@@ -29,14 +30,14 @@ export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseS
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<TypeFromShape<S>>> {
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [this.message] }
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
-    const errors: string[] = []
+    const errors: Issue[] = []
     const output: Record<string, any> = {}
 
     for (const [key, schema] of Object.entries(this.schema)) {
       const res = await schema.parseAsync((value as any)[key])
-      if (res.errors) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [key, ...e.path] })))
       else output[key] = res.data
     }
 

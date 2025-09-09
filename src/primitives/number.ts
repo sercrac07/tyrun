@@ -1,3 +1,4 @@
+import { IssueCode } from '../constants'
 import { BaseSchema } from '../core/base'
 import type { ParseResult, TyrunNumber } from '../types'
 
@@ -12,7 +13,7 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
   public override parse(value: unknown): ParseResult<number> {
     if (this.__coerce) value = Number(value)
 
-    if (typeof value !== 'number') return { errors: [this.message] }
+    if (typeof value !== 'number') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = this.runValidators(value)
     if (errors.length) return { errors }
@@ -23,7 +24,7 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
   public override async parseAsync(value: unknown): Promise<ParseResult<number>> {
     if (this.__coerce) value = Number(value)
 
-    if (typeof value !== 'number') return { errors: [this.message] }
+    if (typeof value !== 'number') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = await this.runValidatorsAsync(value)
     if (errors.length) return { errors }
@@ -37,11 +38,11 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
   }
 
   public min(amount: number, message: string = `Value must be greater or equal than ${amount}`): this {
-    this.validators.push([v => v >= amount, message])
+    this.validators.push([v => v >= amount, message, IssueCode.Min])
     return this
   }
   public max(amount: number, message: string = `Value must be lower or equal than ${amount}`): this {
-    this.validators.push([v => v <= amount, message])
+    this.validators.push([v => v <= amount, message, IssueCode.Max])
     return this
   }
 }

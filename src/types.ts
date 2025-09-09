@@ -1,4 +1,14 @@
-type ParseError = { data?: never; errors: string[] }
+import { IssueCode } from './constants'
+
+export type IssueCode = (typeof IssueCode)[keyof typeof IssueCode]
+
+export type Issue = {
+  message: string
+  path: string[]
+  code: IssueCode
+}
+
+type ParseError = { data?: never; errors: Issue[] }
 type ParseSuccess<T> = { data: T; errors?: never }
 export type ParseResult<T> = ParseError | ParseSuccess<T>
 

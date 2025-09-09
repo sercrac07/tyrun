@@ -1,3 +1,4 @@
+import { IssueCode } from '../constants'
 import { BaseSchema } from '../core/base'
 import type { ParseResult, TyrunDate } from '../types'
 
@@ -12,7 +13,7 @@ export class DateSchema extends BaseSchema<Date> implements TyrunDate {
   public override parse(value: unknown): ParseResult<Date> {
     if (this.__coerce) value = new Date(value as any)
 
-    if (!(value instanceof Date)) return { errors: [this.message] }
+    if (!(value instanceof Date)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = this.runValidators(value)
     if (errors.length) return { errors }
@@ -23,7 +24,7 @@ export class DateSchema extends BaseSchema<Date> implements TyrunDate {
   public override async parseAsync(value: unknown): Promise<ParseResult<Date>> {
     if (this.__coerce) value = new Date(value as any)
 
-    if (!(value instanceof Date)) return { errors: [this.message] }
+    if (!(value instanceof Date)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = await this.runValidatorsAsync(value)
     if (errors.length) return { errors }
@@ -37,11 +38,11 @@ export class DateSchema extends BaseSchema<Date> implements TyrunDate {
   }
 
   public min(date: Date, message: string = `Value must be greater than ${date.toDateString()}`) {
-    this.validators.push([value => value >= date, message])
+    this.validators.push([value => value >= date, message, IssueCode.Min])
     return this
   }
   public max(date: Date, message: string = `Value must be lower than ${date.toDateString()}`) {
-    this.validators.push([value => value <= date, message])
+    this.validators.push([value => value <= date, message, IssueCode.Max])
     return this
   }
 }

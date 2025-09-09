@@ -1,3 +1,4 @@
+import { IssueCode } from '../constants'
 import { BaseSchema } from '../core/base'
 import { ParseResult, TyrunEnum } from '../types'
 
@@ -11,7 +12,7 @@ export class EnumSchema<S extends string | number> extends BaseSchema<S> impleme
   }
 
   public override parse(value: unknown): ParseResult<S> {
-    if (!this.schema.includes(value as any)) return { errors: [this.message] }
+    if (!this.schema.includes(value as any)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = this.runValidators(value as S)
     if (errors.length) return { errors }
@@ -20,7 +21,7 @@ export class EnumSchema<S extends string | number> extends BaseSchema<S> impleme
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<S>> {
-    if (!this.schema.includes(value as any)) return { errors: [this.message] }
+    if (!this.schema.includes(value as any)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = await this.runValidatorsAsync(value as S)
     if (errors.length) return { errors }

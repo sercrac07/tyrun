@@ -1,5 +1,5 @@
 import { BaseSchema } from '../core/base'
-import type { Output, ParseResult, Tyrun, TyrunUnion } from '../types'
+import type { Issue, Output, ParseResult, Tyrun, TyrunUnion } from '../types'
 
 export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> implements TyrunUnion<S> {
   public readonly type = 'union'
@@ -9,7 +9,7 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> imp
   }
 
   public override parse(value: unknown): ParseResult<Output<S>> {
-    const errors: string[] = []
+    const errors: Issue[] = []
 
     for (const schema of this.schemas) {
       const res = schema.parse(value)
@@ -27,7 +27,7 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> imp
     return { errors }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<Output<S>>> {
-    const errors: string[] = []
+    const errors: Issue[] = []
 
     for (const schema of this.schemas) {
       const res = await schema.parseAsync(value)

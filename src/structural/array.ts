@@ -1,5 +1,6 @@
+import { IssueCode } from '../constants'
 import { BaseSchema } from '../core/base'
-import type { Output, ParseResult, Tyrun, TyrunArray } from '../types'
+import type { Issue, Output, ParseResult, Tyrun, TyrunArray } from '../types'
 
 export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> implements TyrunArray<S> {
   public readonly type = 'array'
@@ -11,15 +12,17 @@ export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> i
   }
 
   public override parse(value: unknown): ParseResult<Output<S>[]> {
-    if (!Array.isArray(value)) return { errors: [this.message] }
+    if (!Array.isArray(value)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
-    const errors: string[] = []
+    const errors: Issue[] = []
     const output: Output<S>[] = []
 
+    let i = 0
     for (const v of value) {
       const res = this.schema.parse(v)
-      if (res.errors) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [i.toString(), ...e.path] })))
       else output.push(res.data)
+      i++
     }
 
     errors.push(...this.runValidators(output))
@@ -29,15 +32,17 @@ export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> i
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<Output<S>[]>> {
-    if (!Array.isArray(value)) return { errors: [this.message] }
+    if (!Array.isArray(value)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
-    const errors: string[] = []
+    const errors: Issue[] = []
     const output: Output<S>[] = []
 
+    let i = 0
     for (const v of value) {
       const res = await this.schema.parseAsync(v)
-      if (res.errors) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [i.toString(), ...e.path] })))
       else output.push(res.data)
+      i++
     }
 
     errors.push(...(await this.runValidatorsAsync(output)))
@@ -48,12 +53,12 @@ export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> i
   }
 
   public min(length: number, message: string = `Value must contain at least ${length} items`): this {
-    this.validators.push([v => v.length >= length, message])
+    this.validators.push([v => v.length >= length, message, IssueCode.Min])
     return this
   }
 
   public max(length: number, message: string = `Value must contain at most ${length} items`): this {
-    this.validators.push([v => v.length <= length, message])
+    this.validators.push([v => v.length <= length, message, IssueCode.Max])
     return this
   }
 }

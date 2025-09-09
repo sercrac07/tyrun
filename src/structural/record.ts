@@ -1,5 +1,6 @@
+import { IssueCode } from '../constants'
 import { BaseSchema } from '../core/base'
-import type { Output, ParseResult, Tyrun, TyrunRecord } from '../types'
+import type { Issue, Output, ParseResult, Tyrun, TyrunRecord } from '../types'
 
 export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: string]: Output<S> }> implements TyrunRecord<S> {
   public readonly type = 'record'
@@ -11,14 +12,14 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
   }
 
   public override parse(value: unknown): ParseResult<{ [key: string]: Output<S> }> {
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [this.message] }
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
-    const errors: string[] = []
+    const errors: Issue[] = []
     const output: Record<string, Output<S>> = {}
 
     for (const [key, val] of Object.entries(value)) {
       const res = this.schema.parse(val)
-      if (res.errors) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [key, ...e.path] })))
       else output[key] = res.data
     }
 
@@ -29,14 +30,14 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<{ [key: string]: Output<S> }>> {
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [this.message] }
+    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
-    const errors: string[] = []
+    const errors: Issue[] = []
     const output: Record<string, Output<S>> = {}
 
     for (const [key, val] of Object.entries(value)) {
       const res = await this.schema.parseAsync(val)
-      if (res.errors) errors.push(...res.errors)
+      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [key, ...e.path] })))
       else output[key] = res.data
     }
 

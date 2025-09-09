@@ -10,6 +10,7 @@ import { ObjectSchema } from './structural/object'
 import { RecordSchema } from './structural/record'
 import type { T } from './types'
 
+export * from './constants'
 export type * as T from './types'
 
 export const t: T = {

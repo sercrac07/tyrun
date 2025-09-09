@@ -1,4 +1,5 @@
-import type { MaybePromise, ParseResult, TyrunBase, TyrunMeta, TyrunMutation, TyrunNullable, TyrunNullish, TyrunOptional } from '../types'
+import { IssueCode } from '../constants'
+import type { Issue, IssueCode as IssueCodeType, MaybePromise, ParseResult, TyrunBase, TyrunMeta, TyrunMutation, TyrunNullable, TyrunNullish, TyrunOptional } from '../types'
 import { MutationSchema } from '../utilities/mutation'
 import { NullableSchema } from '../utilities/nullable'
 import { NullishSchema } from '../utilities/nullish'
@@ -6,23 +7,23 @@ import { OptionalSchema } from '../utilities/optional'
 
 export abstract class BaseSchema<T> implements TyrunBase<T> {
   public readonly meta: TyrunMeta = { name: null, description: null }
-  protected validators: [(value: T) => MaybePromise<boolean>, string][] = []
+  protected validators: [(value: T) => MaybePromise<boolean>, string, IssueCodeType | undefined][] = []
   protected transformers: ((value: T) => MaybePromise<T>)[] = []
 
-  protected runValidators(value: T): string[] {
-    const errors: string[] = []
-    for (const [val, mes] of this.validators) {
+  protected runValidators(value: T): Issue[] {
+    const errors: Issue[] = []
+    for (const [val, mes, code] of this.validators) {
       const res = val(value)
       if (res instanceof Promise) continue
-      if (!res) errors.push(mes)
+      if (!res) errors.push({ message: mes, path: [], code: code ?? IssueCode.RefinementFailed })
     }
     return errors
   }
-  protected async runValidatorsAsync(value: T): Promise<string[]> {
-    const errors: string[] = []
-    for (const [val, mes] of this.validators) {
+  protected async runValidatorsAsync(value: T): Promise<Issue[]> {
+    const errors: Issue[] = []
+    for (const [val, mes, code] of this.validators) {
       const res = await val(value)
-      if (!res) errors.push(mes)
+      if (!res) errors.push({ message: mes, path: [], code: code ?? IssueCode.RefinementFailed })
     }
     return errors
   }
@@ -49,7 +50,7 @@ export abstract class BaseSchema<T> implements TyrunBase<T> {
   public abstract parseAsync(value: unknown): Promise<ParseResult<T>>
 
   public refine(predicate: (value: T) => MaybePromise<boolean>, message: string = 'Refinement failed'): this {
-    this.validators.push([predicate, message])
+    this.validators.push([predicate, message, undefined])
     return this
   }
   public transform(transformer: (value: T) => MaybePromise<T>): this {
