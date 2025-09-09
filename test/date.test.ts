@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
-describe('number', () => {
+describe('date', () => {
   it('should be defined', () => {
     expect(t.date).toBeDefined()
   })
