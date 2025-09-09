@@ -30,6 +30,8 @@ describe('union', () => {
         .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
         .parse(dataNumber)
     ).toEqual(generateSuccess(dataNumber))
+    expect(t.union(schema).default(dataString).parse(undefined)).toEqual(generateSuccess(dataString))
+    expect(t.union(schema).default(dataNumber).parse(undefined)).toEqual(generateSuccess(dataNumber))
   })
 
   it('should not parse', () => {

@@ -21,6 +21,7 @@ describe('file', () => {
         .transform(async v => new File([v], v.name.toUpperCase(), { type: v.type, lastModified: v.lastModified }))
         .parse(data)
     ).toEqual(generateSuccess(data))
+    expect(t.file().default(data).parse(undefined)).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

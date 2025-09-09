@@ -22,6 +22,7 @@ describe('string', () => {
         .transform(async v => v.toUpperCase())
         .parse(data)
     ).toEqual(generateSuccess(data))
+    expect(t.string().default(data).parse(undefined)).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

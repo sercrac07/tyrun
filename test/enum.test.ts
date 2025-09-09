@@ -22,6 +22,7 @@ describe('enum', () => {
         .transform(async v => (v === 'a' ? 'b' : 'c'))
         .parse(data)
     ).toEqual(generateSuccess(data))
+    expect(t.enum(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

@@ -22,6 +22,7 @@ describe('number', () => {
         .transform(async v => v * 2)
         .parse(data)
     ).toEqual(generateSuccess(data))
+    expect(t.number().default(data).parse(undefined)).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

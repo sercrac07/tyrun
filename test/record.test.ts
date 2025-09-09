@@ -23,6 +23,7 @@ describe('record', () => {
         .transform(async v => ({ ...v, a: v.a.toUpperCase() }))
         .parse(data)
     ).toEqual(generateSuccess(data))
+    expect(t.record(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

@@ -23,6 +23,7 @@ describe('array', () => {
         .transform(async v => v.map(item => item.toUpperCase()))
         .parse(data)
     ).toEqual(generateSuccess(data))
+    expect(t.array(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

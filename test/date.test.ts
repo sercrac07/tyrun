@@ -22,6 +22,7 @@ describe('date', () => {
         .transform(async v => new Date(v.getTime() + 1000 * 60 * 60 * 24))
         .parse(data)
     ).toEqual(generateSuccess(data))
+    expect(t.date().default(data).parse(undefined)).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
