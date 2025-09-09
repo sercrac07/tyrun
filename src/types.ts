@@ -32,6 +32,18 @@ export interface T {
    */
   boolean: (message?: string) => TyrunBoolean
   /**
+   * Validates that the input is a date.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#date-validator)
+   */
+  date: (message?: string) => TyrunDate
+  /**
+   * Validates that the input is a literal value.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#literal-validator)
+   */
+  literal: <S extends string | number | boolean>(schema: S, message?: string) => TyrunLiteral<S>
+  /**
    * Validates that the input is an object with the specified shape.
    *
    * [API Reference](https://github.com/sercrac07/tyrun#object-validator)
@@ -61,12 +73,6 @@ export interface T {
    * [API Reference](https://github.com/sercrac07/tyrun#union-validator)
    */
   union: <S extends Tyrun<any>>(schemas: S[]) => TyrunUnion<S>
-  /**
-   * Validates that the input is a date.
-   *
-   * [API Reference](https://github.com/sercrac07/tyrun#date-validator)
-   */
-  date: (message?: string) => TyrunDate
   /**
    * Validates that the input is a file.
    *
@@ -175,6 +181,28 @@ export interface TyrunBoolean extends TyrunBase<boolean> {
    */
   coerce(): this
 }
+export interface TyrunDate extends TyrunBase<Date> {
+  readonly type: 'date'
+  /**
+   * Coerces the input value to a date.
+   */
+  coerce(): this
+  /**
+   * Sets the minimum date of the date.
+   */
+  min(date: Date, message?: string): this
+  /**
+   * Sets the maximum date of the date.
+   */
+  max(date: Date, message?: string): this
+}
+export interface TyrunLiteral<S extends string | number | boolean> extends TyrunBase<S> {
+  readonly type: 'literal'
+  /**
+   * The literal value.
+   */
+  readonly value: S
+}
 export interface TyrunObject<S extends { [key: string]: Tyrun<any> }> extends TyrunBase<TypeFromShape<S>> {
   readonly type: 'object'
   /**
@@ -213,21 +241,6 @@ export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: str
 }
 export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
   readonly type: 'union'
-}
-export interface TyrunDate extends TyrunBase<Date> {
-  readonly type: 'date'
-  /**
-   * Coerces the input value to a date.
-   */
-  coerce(): this
-  /**
-   * Sets the minimum date of the date.
-   */
-  min(date: Date, message?: string): this
-  /**
-   * Sets the maximum date of the date.
-   */
-  max(date: Date, message?: string): this
 }
 export interface TyrunFile extends TyrunBase<File> {
   readonly type: 'file'
