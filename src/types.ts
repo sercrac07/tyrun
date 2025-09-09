@@ -1,6 +1,6 @@
-import { IssueCode } from './constants'
+import { IssueCode as IssueCodeValues } from './constants'
 
-export type IssueCode = (typeof IssueCode)[keyof typeof IssueCode]
+export type IssueCode = (typeof IssueCodeValues)[keyof typeof IssueCodeValues]
 
 export type Issue = {
   message: string
