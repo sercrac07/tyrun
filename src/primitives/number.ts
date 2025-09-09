@@ -11,6 +11,7 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
   }
 
   public override parse(value: unknown): ParseResult<number> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
     if (this.__coerce) value = Number(value)
 
     if (typeof value !== 'number') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
@@ -22,6 +23,7 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<number>> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
     if (this.__coerce) value = Number(value)
 
     if (typeof value !== 'number') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }

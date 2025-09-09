@@ -12,6 +12,8 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
   }
 
   public override parse(value: unknown): ParseResult<{ [key: string]: Output<S> }> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors: Issue[] = []
@@ -30,6 +32,8 @@ export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: strin
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<{ [key: string]: Output<S> }>> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors: Issue[] = []

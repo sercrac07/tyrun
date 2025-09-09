@@ -10,6 +10,8 @@ export class FileSchema extends BaseSchema<File> implements TyrunFile {
   }
 
   public override parse(value: unknown): ParseResult<File> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     if (!(value instanceof File)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = this.runValidators(value)
@@ -19,6 +21,8 @@ export class FileSchema extends BaseSchema<File> implements TyrunFile {
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<File>> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     if (!(value instanceof File)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = await this.runValidatorsAsync(value)

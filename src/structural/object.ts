@@ -12,6 +12,8 @@ export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseS
   }
 
   public override parse(value: unknown): ParseResult<TypeFromShape<S>> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors: Issue[] = []
@@ -30,6 +32,8 @@ export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseS
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<TypeFromShape<S>>> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors: Issue[] = []

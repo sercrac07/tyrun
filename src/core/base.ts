@@ -6,7 +6,8 @@ import { NullishSchema } from '../utilities/nullish'
 import { OptionalSchema } from '../utilities/optional'
 
 export abstract class BaseSchema<T> implements TyrunBase<T> {
-  public readonly meta: TyrunMeta = { name: null, description: null }
+  public __default: T | undefined = undefined
+  public meta: TyrunMeta = { name: null, description: null }
   protected validators: [(value: T) => MaybePromise<boolean>, string, IssueCodeType | undefined][] = []
   protected transformers: ((value: T) => MaybePromise<T>)[] = []
 
@@ -69,6 +70,11 @@ export abstract class BaseSchema<T> implements TyrunBase<T> {
   }
   public mutate<O>(mutation: (value: T) => MaybePromise<O>): TyrunMutation<this, O> {
     return new MutationSchema(this, mutation)
+  }
+
+  public default(value: T): this {
+    this.__default = value
+    return this
   }
 
   public name(name: string) {

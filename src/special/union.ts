@@ -9,6 +9,8 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> imp
   }
 
   public override parse(value: unknown): ParseResult<Output<S>> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     const errors: Issue[] = []
 
     for (const schema of this.schemas) {
@@ -27,6 +29,8 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> imp
     return { errors }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<Output<S>>> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     const errors: Issue[] = []
 
     for (const schema of this.schemas) {

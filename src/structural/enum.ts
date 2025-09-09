@@ -12,6 +12,8 @@ export class EnumSchema<S extends string | number> extends BaseSchema<S> impleme
   }
 
   public override parse(value: unknown): ParseResult<S> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     if (!this.schema.includes(value as any)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = this.runValidators(value as S)
@@ -21,6 +23,8 @@ export class EnumSchema<S extends string | number> extends BaseSchema<S> impleme
     return { data: v }
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<S>> {
+    if (this.__default !== undefined && value === undefined) value = this.__default
+
     if (!this.schema.includes(value as any)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = await this.runValidatorsAsync(value as S)

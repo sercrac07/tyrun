@@ -76,7 +76,8 @@ export interface T {
 }
 
 export interface Tyrun<T> {
-  readonly meta: TyrunMeta
+  meta: TyrunMeta
+  __default: T | undefined
   /**
    * Validates the input value against the schema.
    *
@@ -87,6 +88,10 @@ export interface Tyrun<T> {
    * Validates the input value against the schema asynchronously.
    */
   parseAsync(value: unknown): Promise<ParseResult<T>>
+  /**
+   * Sets the default value for the schema.
+   */
+  default(value: T): this
 }
 
 export interface TyrunMeta {
@@ -275,11 +280,16 @@ export interface TyrunNullish<S extends Tyrun<any>> extends Tyrun<Output<S> | nu
   mutate<O>(mutation: (value: Output<S> | null | undefined) => O): TyrunMutation<this, O>
 }
 export interface TyrunMutation<I extends TyrunBase<any> | TyrunOptional<any> | TyrunNullable<any> | TyrunNullish<any>, O> extends Tyrun<O> {
+  __default: Output<I> | undefined
   readonly type: 'mutation'
   /**
    * The inner schema of the mutation.
    */
   readonly inner: I
+  /**
+   * Sets the default value of the mutation.
+   */
+  default(value: Output<I>): this
 }
 
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: T[K] } : T
