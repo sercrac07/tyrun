@@ -92,6 +92,12 @@ export interface T {
    */
   any: () => TyrunAny
   /**
+   * Validates a lazy schema.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#lazy-validator)
+   */
+  lazy: <S extends Tyrun<any>>(schema: () => S) => TyrunLazy<S>
+  /**
    * Validates that the input is a file.
    *
    * [API Reference](https://github.com/sercrac07/tyrun#file-validator)
@@ -334,6 +340,13 @@ export interface TyrunMutation<I extends TyrunBase<any> | TyrunOptional<any> | T
    * Sets the default value of the mutation.
    */
   default(value: Output<I>): this
+}
+export interface TyrunLazy<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
+  readonly type: 'lazy'
+  /**
+   * The inner schema of the lazy.
+   */
+  readonly inner: S
 }
 
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: T[K] } : T

@@ -6,6 +6,7 @@ import { StringSchema } from './primitives/string'
 import { AnySchema } from './special/any'
 import { FileSchema } from './special/file'
 import { IntersectionSchema } from './special/intersection'
+import { LazySchema } from './special/lazy'
 import { UnionSchema } from './special/union'
 import { ArraySchema } from './structural/array'
 import { EnumSchema } from './structural/enum'
@@ -31,5 +32,6 @@ export const t: T = {
   union: schemas => new UnionSchema(schemas),
   intersection: schemas => new IntersectionSchema(schemas),
   any: () => new AnySchema(),
+  lazy: schema => new LazySchema(schema),
   file: message => new FileSchema(message),
 }
