@@ -24,6 +24,12 @@ describe('boolean', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.boolean().default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .boolean()
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

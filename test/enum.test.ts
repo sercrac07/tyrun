@@ -23,6 +23,12 @@ describe('enum', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.enum(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .enum(schema)
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

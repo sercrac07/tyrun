@@ -24,6 +24,12 @@ describe('record', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.record(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .record(schema)
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

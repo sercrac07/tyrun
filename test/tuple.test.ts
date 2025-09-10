@@ -23,6 +23,12 @@ describe('tuple', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.tuple(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .tuple(schema)
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

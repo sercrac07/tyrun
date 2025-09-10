@@ -23,6 +23,12 @@ describe('intersection', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.intersection(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .intersection(schema)
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

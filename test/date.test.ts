@@ -23,6 +23,12 @@ describe('date', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.date().default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .date()
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

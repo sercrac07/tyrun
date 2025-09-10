@@ -23,6 +23,12 @@ describe('literal', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.literal(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .literal(schema)
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

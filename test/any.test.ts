@@ -26,6 +26,12 @@ describe('any', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.any().default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .any()
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should parse async', async () => {

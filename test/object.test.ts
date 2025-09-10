@@ -24,6 +24,12 @@ describe('object', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.object(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .object(schema)
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

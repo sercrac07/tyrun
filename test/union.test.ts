@@ -32,6 +32,18 @@ describe('union', () => {
     ).toEqual(generateSuccess(dataNumber))
     expect(t.union(schema).default(dataString).parse(undefined)).toEqual(generateSuccess(dataString))
     expect(t.union(schema).default(dataNumber).parse(undefined)).toEqual(generateSuccess(dataNumber))
+    expect(
+      t
+        .union(schema)
+        .preprocess(() => dataString)
+        .parse(undefined)
+    ).toEqual(generateSuccess(dataString))
+    expect(
+      t
+        .union(schema)
+        .preprocess(() => dataNumber)
+        .parse(undefined)
+    ).toEqual(generateSuccess(dataNumber))
   })
 
   it('should not parse', () => {

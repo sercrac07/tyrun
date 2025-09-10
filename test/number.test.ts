@@ -23,6 +23,12 @@ describe('number', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.number().default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .number()
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

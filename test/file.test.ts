@@ -22,6 +22,12 @@ describe('file', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.file().default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .file()
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {

@@ -23,6 +23,12 @@ describe('lazy', () => {
         .parse(data)
     ).toEqual(generateSuccess(data))
     expect(t.lazy(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
+    expect(
+      t
+        .lazy(schema)
+        .preprocess(() => data)
+        .parse(undefined)
+    ).toEqual(generateSuccess(data))
   })
 
   it('should not parse', () => {
