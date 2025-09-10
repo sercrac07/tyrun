@@ -289,6 +289,13 @@ export interface TyrunIntersection<S extends TyrunObject<any> | TyrunRecord<any>
 export interface TyrunAny extends TyrunBase<any> {
   readonly type: 'any'
 }
+export interface TyrunLazy<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
+  readonly type: 'lazy'
+  /**
+   * The inner schema of the lazy.
+   */
+  readonly inner: S
+}
 export interface TyrunFile extends TyrunBase<File> {
   readonly type: 'file'
   /**
@@ -350,13 +357,6 @@ export interface TyrunMutation<I extends TyrunBase<any> | TyrunOptional<any> | T
    * Sets the default value of the mutation.
    */
   default(value: Output<I>): this
-}
-export interface TyrunLazy<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
-  readonly type: 'lazy'
-  /**
-   * The inner schema of the lazy.
-   */
-  readonly inner: S
 }
 
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: T[K] } : T
