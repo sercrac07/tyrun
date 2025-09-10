@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.0.0 - 2025-09-11
+
+### Added
+
+- `parseAsync` method for all validators
+- `default` method for all validators
+- `literal` validator
+- `tuple` validator
+- `intersection` validator
+- `any` validator
+- `lazy` validator
+- `preprocess` method for all validators
+- `email` method for `string` validator
+
+### Changed
+
+- Error message on `date.min`
+- `ParseResult` now has `data` and `errors` properties. When there is an error, `data` is empty and if there is not, `errors` is empty
+- `ParseResult.errors` now is an array of `Issue`
+
+### Fixed
+
+- `T.Output` type for mutation schemas
+
 ## 2.2.0 - 2025-09-05
 
 ### Added
