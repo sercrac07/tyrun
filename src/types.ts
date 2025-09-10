@@ -68,6 +68,12 @@ export interface T {
    */
   record: <S extends Tyrun<any>>(schema: S, message?: string) => TyrunRecord<S>
   /**
+   * Validates that the input is a tuple of the defined schemas.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#tuple-validator)
+   */
+  tuple: <S extends Tyrun<any>[]>(schema: [...S], message?: string) => TyrunTuple<S>
+  /**
    * Validates that the input is one of the defined schemas.
    *
    * [API Reference](https://github.com/sercrac07/tyrun#union-validator)
@@ -236,6 +242,13 @@ export interface TyrunRecord<S extends Tyrun<any>> extends TyrunBase<{ [key: str
   readonly type: 'record'
   /**
    * The inner schema of the record.
+   */
+  readonly inner: S
+}
+export interface TyrunTuple<S extends Tyrun<any>[]> extends TyrunBase<{ [key in keyof S]: Output<S[key]> }> {
+  readonly type: 'tuple'
+  /**
+   * The inner schema of the tuple.
    */
   readonly inner: S
 }

@@ -9,6 +9,7 @@ import { ArraySchema } from './structural/array'
 import { EnumSchema } from './structural/enum'
 import { ObjectSchema } from './structural/object'
 import { RecordSchema } from './structural/record'
+import { TupleSchema } from './structural/tuple'
 import type { T } from './types'
 
 export * from './constants'
@@ -24,6 +25,7 @@ export const t: T = {
   array: (schema, message) => new ArraySchema(schema, message),
   enum: (schema, message) => new EnumSchema(schema, message),
   record: (schema, message) => new RecordSchema(schema, message),
+  tuple: (schema, message) => new TupleSchema(schema, message),
   union: schemas => new UnionSchema(schemas),
   file: message => new FileSchema(message),
 }
