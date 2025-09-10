@@ -2,6 +2,15 @@ import { IssueCode } from '../constants'
 import { BaseSchema } from '../core/base'
 import type { ParseResult, TyrunString } from '../types'
 
+export type EmailConfig = {
+  message?: string
+  regex?: RegExp
+}
+const DEFAULT_EMAIL_CONFIG: Required<EmailConfig> = {
+  message: 'Value must be a valid email address',
+  regex: /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-.]*)[a-z0-9_'+-]@([a-z0-9][a-z0-9-]*\.)+[a-z]{2,}$/i,
+}
+
 export class StringSchema extends BaseSchema<string> implements TyrunString {
   public readonly type = 'string'
   protected __coerce = false
@@ -52,6 +61,14 @@ export class StringSchema extends BaseSchema<string> implements TyrunString {
 
   public regex(regex: RegExp, message: string = `Value does not match regex: ${regex}`): this {
     this.validators.push([v => regex.test(v), message, IssueCode.RefinementFailed])
+    return this
+  }
+  public email(message: string): this
+  public email(config: EmailConfig): this
+  public email(config: EmailConfig | string = DEFAULT_EMAIL_CONFIG.message) {
+    const options: Required<EmailConfig> = typeof config === 'string' ? { ...DEFAULT_EMAIL_CONFIG, message: config } : { ...DEFAULT_EMAIL_CONFIG, ...config }
+
+    this.validators.push([v => options.regex.test(v), options.message, IssueCode.RefinementFailed])
     return this
   }
 }

@@ -1,4 +1,5 @@
 import { IssueCode as IssueCodeValues } from './constants'
+import { EmailConfig } from './primitives/string'
 
 export type IssueCode = (typeof IssueCodeValues)[keyof typeof IssueCodeValues]
 
@@ -186,6 +187,11 @@ export interface TyrunString extends TyrunBase<string> {
    * Sets a regular expression to match the string.
    */
   regex(regex: RegExp, message?: string): this
+  /**
+   * Validates that the input is an email address.
+   */
+  email(message?: string): this
+  email(config: EmailConfig): this
 }
 export interface TyrunNumber extends TyrunBase<number> {
   readonly type: 'number'
