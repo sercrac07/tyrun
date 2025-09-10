@@ -10,6 +10,7 @@ export class NullableSchema<S extends Tyrun<any>> implements TyrunNullable<S> {
   constructor(private schema: S) {
     this.meta = schema.meta
     this.inner = schema
+    this.__default = schema.__default
   }
 
   public parse(value: unknown): ParseResult<Output<S> | null> {

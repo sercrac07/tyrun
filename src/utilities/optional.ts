@@ -11,6 +11,7 @@ export class OptionalSchema<S extends Tyrun<any>> implements TyrunOptional<S> {
   constructor(private schema: S) {
     this.meta = schema.meta
     this.inner = schema
+    this.__default = schema.__default
   }
 
   public parse(value: unknown): ParseResult<Output<S> | undefined> {

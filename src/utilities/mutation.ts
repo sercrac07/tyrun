@@ -9,6 +9,7 @@ export class MutationSchema<I extends TyrunBase<any> | TyrunOptional<any> | Tyru
   constructor(private schema: I, private mutation: (value: Output<I>) => MaybePromise<O>) {
     this.inner = schema
     this.meta = schema.meta
+    this.__default = schema.__default
   }
 
   public parse(value: unknown): ParseResult<O> {
