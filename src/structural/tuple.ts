@@ -13,6 +13,7 @@ export class TupleSchema<S extends Tyrun<any>[]> extends BaseSchema<{ [key in ke
 
   public override parse(value: unknown): ParseResult<{ [key in keyof S]: Output<S[key]> }> {
     if (this.__default !== undefined && value === undefined) value = this.__default
+    value = this.runPreprocessors(value)
 
     if (!Array.isArray(value) || value.length !== this.schemas.length) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
@@ -35,6 +36,7 @@ export class TupleSchema<S extends Tyrun<any>[]> extends BaseSchema<{ [key in ke
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<{ [key in keyof S]: Output<S[key]> }>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
+    value = await this.runPreprocessorsAsync(value)
 
     if (!Array.isArray(value) || value.length !== this.schemas.length) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 

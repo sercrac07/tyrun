@@ -10,6 +10,7 @@ export class IntersectionSchema<S extends TyrunObject<any> | TyrunRecord<any>> e
 
   public override parse(value: unknown): ParseResult<UnionToIntersection<Output<S>>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
+    value = this.runPreprocessors(value)
 
     const errors: Issue[] = []
     let output: Record<string, any> = {}
@@ -28,6 +29,7 @@ export class IntersectionSchema<S extends TyrunObject<any> | TyrunRecord<any>> e
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<UnionToIntersection<Output<S>>>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
+    value = await this.runPreprocessorsAsync(value)
 
     const errors: Issue[] = []
     let output: Record<string, any> = {}

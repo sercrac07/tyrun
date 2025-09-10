@@ -13,6 +13,7 @@ export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
   public override parse(value: unknown): ParseResult<boolean> {
     if (this.__default !== undefined && value === undefined) value = this.__default
     if (this.__coerce) value = Boolean(value)
+    value = this.runPreprocessors(value)
 
     if (typeof value !== 'boolean') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
@@ -25,6 +26,7 @@ export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
   public override async parseAsync(value: unknown): Promise<ParseResult<boolean>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
     if (this.__coerce) value = Boolean(value)
+    value = await this.runPreprocessorsAsync(value)
 
     if (typeof value !== 'boolean') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 

@@ -10,6 +10,7 @@ export abstract class BaseSchema<T> implements TyrunBase<T> {
   public meta: TyrunMeta = { name: null, description: null }
   protected validators: [(value: T) => MaybePromise<boolean>, string, IssueCodeType | undefined][] = []
   protected transformers: ((value: T) => MaybePromise<T>)[] = []
+  protected preprocessors: ((value: unknown) => MaybePromise<unknown>)[] = []
 
   protected runValidators(value: T): Issue[] {
     const errors: Issue[] = []
@@ -44,6 +45,22 @@ export abstract class BaseSchema<T> implements TyrunBase<T> {
     }
     return v
   }
+  protected runPreprocessors(value: unknown): unknown {
+    let v = value
+    for (const preprocessor of this.preprocessors) {
+      const res = preprocessor(v)
+      if (res instanceof Promise) continue
+      v = res
+    }
+    return v
+  }
+  protected async runPreprocessorsAsync(value: unknown): Promise<unknown> {
+    let v = value
+    for (const preprocessor of this.preprocessors) {
+      v = await preprocessor(v)
+    }
+    return v
+  }
 
   constructor() {}
 
@@ -56,6 +73,10 @@ export abstract class BaseSchema<T> implements TyrunBase<T> {
   }
   public transform(transformer: (value: T) => MaybePromise<T>): this {
     this.transformers.push(transformer)
+    return this
+  }
+  public preprocess(preprocessor: (value: unknown) => MaybePromise<unknown>): this {
+    this.preprocessors.push(preprocessor)
     return this
   }
 

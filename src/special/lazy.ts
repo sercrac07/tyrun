@@ -12,6 +12,7 @@ export class LazySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> impl
 
   public override parse(value: unknown): ParseResult<Output<S>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
+    value = this.runPreprocessors(value)
 
     const res = this.schema().parse(value)
     if (res.errors) return res
@@ -24,6 +25,7 @@ export class LazySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> impl
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<Output<S>>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
+    value = await this.runPreprocessorsAsync(value)
 
     const res = await this.schema().parseAsync(value)
     if (res.errors) return res

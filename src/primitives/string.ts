@@ -13,6 +13,7 @@ export class StringSchema extends BaseSchema<string> implements TyrunString {
   public override parse(value: unknown): ParseResult<string> {
     if (this.__default !== undefined && value === undefined) value = this.__default
     if (this.__coerce) value = String(value)
+    value = this.runPreprocessors(value)
 
     if (typeof value !== 'string') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
@@ -25,6 +26,7 @@ export class StringSchema extends BaseSchema<string> implements TyrunString {
   public override async parseAsync(value: unknown): Promise<ParseResult<string>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
     if (this.__coerce) value = String(value)
+    value = await this.runPreprocessorsAsync(value)
 
     if (typeof value !== 'string') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 

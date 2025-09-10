@@ -10,6 +10,7 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> imp
 
   public override parse(value: unknown): ParseResult<Output<S>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
+    value = this.runPreprocessors(value)
 
     const errors: Issue[] = []
 
@@ -30,6 +31,7 @@ export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> imp
   }
   public override async parseAsync(value: unknown): Promise<ParseResult<Output<S>>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
+    value = await this.runPreprocessorsAsync(value)
 
     const errors: Issue[] = []
 

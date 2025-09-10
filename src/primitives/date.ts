@@ -13,6 +13,7 @@ export class DateSchema extends BaseSchema<Date> implements TyrunDate {
   public override parse(value: unknown): ParseResult<Date> {
     if (this.__default !== undefined && value === undefined) value = this.__default
     if (this.__coerce) value = new Date(value as any)
+    value = this.runPreprocessors(value)
 
     if (!(value instanceof Date)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
@@ -25,6 +26,7 @@ export class DateSchema extends BaseSchema<Date> implements TyrunDate {
   public override async parseAsync(value: unknown): Promise<ParseResult<Date>> {
     if (this.__default !== undefined && value === undefined) value = this.__default
     if (this.__coerce) value = new Date(value as any)
+    value = await this.runPreprocessorsAsync(value)
 
     if (!(value instanceof Date)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 

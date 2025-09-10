@@ -162,6 +162,10 @@ export interface TyrunBase<T> extends Tyrun<T> {
    * Transforms the input value into a new value after the validation and transformation.
    */
   mutate<O>(mutation: (value: T) => MaybePromise<O>): TyrunMutation<this, O>
+  /**
+   * Preprocesses the input value before validation.
+   */
+  preprocess(preprocessor: (value: unknown) => MaybePromise<unknown>): this
 }
 
 export interface TyrunString extends TyrunBase<string> {
