@@ -56,6 +56,7 @@ describe('string', () => {
         .regex(/^[a-z]+$/)
         .parse(data)
     ).toEqual(generateSuccess(data))
+    expect(t.string().email().parse('test@example.com')).toEqual(generateSuccess('test@example.com'))
     expect(
       t
         .string()
@@ -73,6 +74,7 @@ describe('string', () => {
         .regex(/^[0-9]+$/)
         .parse(data)
     ).toEqual(generateError({ message: 'Value does not match regex: /^[0-9]+$/', path: [], code: IssueCode.RefinementFailed }))
+    expect(t.string().email().parse(data)).toEqual(generateError({ message: 'Value must be a valid email address', path: [], code: IssueCode.RefinementFailed }))
     expect(
       t
         .string()
