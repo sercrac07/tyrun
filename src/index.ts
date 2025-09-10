@@ -3,6 +3,7 @@ import { DateSchema } from './primitives/date'
 import { LiteralSchema } from './primitives/literal'
 import { NumberSchema } from './primitives/number'
 import { StringSchema } from './primitives/string'
+import { AnySchema } from './special/any'
 import { FileSchema } from './special/file'
 import { IntersectionSchema } from './special/intersection'
 import { UnionSchema } from './special/union'
@@ -29,5 +30,6 @@ export const t: T = {
   tuple: (schemas, message) => new TupleSchema(schemas, message),
   union: schemas => new UnionSchema(schemas),
   intersection: schemas => new IntersectionSchema(schemas),
+  any: () => new AnySchema(),
   file: message => new FileSchema(message),
 }

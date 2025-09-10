@@ -86,6 +86,12 @@ export interface T {
    */
   intersection: <S extends TyrunObject<any> | TyrunRecord<any>>(schemas: S[]) => TyrunIntersection<S>
   /**
+   * Validates that the input is an any value.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#any-validator)
+   */
+  any: () => TyrunAny
+  /**
    * Validates that the input is a file.
    *
    * [API Reference](https://github.com/sercrac07/tyrun#file-validator)
@@ -263,6 +269,9 @@ export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
 }
 export interface TyrunIntersection<S extends TyrunObject<any> | TyrunRecord<any>> extends TyrunBase<UnionToIntersection<Output<S>>> {
   readonly type: 'intersection'
+}
+export interface TyrunAny extends TyrunBase<any> {
+  readonly type: 'any'
 }
 export interface TyrunFile extends TyrunBase<File> {
   readonly type: 'file'
