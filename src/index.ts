@@ -4,6 +4,7 @@ import { LiteralSchema } from './primitives/literal'
 import { NumberSchema } from './primitives/number'
 import { StringSchema } from './primitives/string'
 import { FileSchema } from './special/file'
+import { IntersectionSchema } from './special/intersection'
 import { UnionSchema } from './special/union'
 import { ArraySchema } from './structural/array'
 import { EnumSchema } from './structural/enum'
@@ -25,7 +26,8 @@ export const t: T = {
   array: (schema, message) => new ArraySchema(schema, message),
   enum: (schema, message) => new EnumSchema(schema, message),
   record: (schema, message) => new RecordSchema(schema, message),
-  tuple: (schema, message) => new TupleSchema(schema, message),
+  tuple: (schemas, message) => new TupleSchema(schemas, message),
   union: schemas => new UnionSchema(schemas),
+  intersection: schemas => new IntersectionSchema(schemas),
   file: message => new FileSchema(message),
 }

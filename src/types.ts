@@ -72,13 +72,19 @@ export interface T {
    *
    * [API Reference](https://github.com/sercrac07/tyrun#tuple-validator)
    */
-  tuple: <S extends Tyrun<any>[]>(schema: [...S], message?: string) => TyrunTuple<S>
+  tuple: <S extends Tyrun<any>[]>(schemas: [...S], message?: string) => TyrunTuple<S>
   /**
    * Validates that the input is one of the defined schemas.
    *
    * [API Reference](https://github.com/sercrac07/tyrun#union-validator)
    */
   union: <S extends Tyrun<any>>(schemas: S[]) => TyrunUnion<S>
+  /**
+   * Validates that the input is an intersection of the defined schemas.
+   *
+   * [API Reference](https://github.com/sercrac07/tyrun#intersection-validator)
+   */
+  intersection: <S extends TyrunObject<any> | TyrunRecord<any>>(schemas: S[]) => TyrunIntersection<S>
   /**
    * Validates that the input is a file.
    *
@@ -255,6 +261,9 @@ export interface TyrunTuple<S extends Tyrun<any>[]> extends TyrunBase<{ [key in 
 export interface TyrunUnion<S extends Tyrun<any>> extends TyrunBase<Output<S>> {
   readonly type: 'union'
 }
+export interface TyrunIntersection<S extends TyrunObject<any> | TyrunRecord<any>> extends TyrunBase<UnionToIntersection<Output<S>>> {
+  readonly type: 'intersection'
+}
 export interface TyrunFile extends TyrunBase<File> {
   readonly type: 'file'
   /**
@@ -320,6 +329,7 @@ export interface TyrunMutation<I extends TyrunBase<any> | TyrunOptional<any> | T
 
 type Flatten<T> = T extends Record<any, any> ? { [K in keyof T]: T[K] } : T
 export type MaybePromise<T> = T | Promise<T>
+export type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (x: infer I) => void ? I : never
 
 /**
  * Infers the output type of a schema.
