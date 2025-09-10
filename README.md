@@ -54,6 +54,7 @@ t.string()
 t.string().min(10)
 t.string().max(100)
 t.string().regex(/^[a-zA-Z0-9]+$/)
+t.string().email()
 
 // Coerce input to be an string
 t.string().coerce()
@@ -150,12 +151,47 @@ t.record(t.number())
 t.record(t.number()).inner
 ```
 
+### Tuple validator
+
+Validates that the input is a tuple of the defined schemas.
+
+```ts
+t.tuple([t.string(), t.number()])
+
+// Access inner schemas
+t.tuple([t.string(), t.number()]).inner
+```
+
 ### Union validator
 
 Validates that the input is one of the defined union schemas.
 
 ```ts
 t.union([t.string(), t.number()])
+```
+
+### Intersection validator
+
+Validates that the input is an intersection of the defined schemas.
+
+```ts
+t.intersection([t.object({ name: t.string() }), t.object({ age: t.number() })])
+```
+
+### Any validator
+
+Validates that the input is any value.
+
+```ts
+t.any()
+```
+
+### Lazy validator
+
+Validates that the input is a lazy schema.
+
+```ts
+t.lazy(() => t.string())
 ```
 
 ### File validator
