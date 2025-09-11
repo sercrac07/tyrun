@@ -380,6 +380,12 @@ export type Input<S extends Tyrun<any>> = S extends TyrunObject<infer Shape>
   ? Input<I>
   : S extends TyrunUnion<infer S>
   ? Input<S>
+  : S extends TyrunIntersection<infer S>
+  ? Input<S>
+  : S extends TyrunLazy<infer S>
+  ? Input<S>
+  : S extends TyrunTuple<infer S>
+  ? { [key in keyof S]: Input<S[key]> }
   : S extends Tyrun<infer T>
   ? T
   : never
