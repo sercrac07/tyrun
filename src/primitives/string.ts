@@ -3,7 +3,13 @@ import { BaseSchema } from '../core/base'
 import type { ParseResult, TyrunString } from '../types'
 
 export type EmailConfig = {
+  /**
+   * @default 'Value must be a valid email address'
+   */
   message?: string
+  /**
+   * @default /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-.]*)[a-z0-9_'+-]@([a-z0-9][a-z0-9-]*\.)+[a-z]{2,}$/i
+   */
   regex?: RegExp
 }
 const DEFAULT_EMAIL_CONFIG: Required<EmailConfig> = {
