@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, t } from '../src'
+import { IssueCode, T, t } from '../src'
 import { generateError, generateSuccess } from './utils'
+
+const _schema = t.union([t.string(), t.number()]).mutate(v => String(v))
+type _SchemaOutput = T.Output<typeof _schema> // Expected: string
+type _SchemaInput = T.Input<typeof _schema> // Expected: string | number
+
+const _complexSchema = t.union([t.string().mutate(v => Number(v)), t.number()])
+type _ComplexSchemaOutput = T.Output<typeof _complexSchema> // Expected: number
+type _ComplexSchemaInput = T.Input<typeof _complexSchema> // Expected: string | number
 
 describe('union', () => {
   it('should be defined', () => {

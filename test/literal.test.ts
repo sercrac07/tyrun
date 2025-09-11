@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, t } from '../src'
+import { IssueCode, T, t } from '../src'
 import { generateError, generateSuccess } from './utils'
+
+const _schema = t.literal('literal').mutate(v => Number(v))
+type _SchemaOutput = T.Output<typeof _schema> // Expected: number
+type _SchemaInput = T.Input<typeof _schema> // Expected: 'literal'
 
 describe('literal', () => {
   it('should be defined', () => {

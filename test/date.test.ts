@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, t } from '../src'
+import { IssueCode, T, t } from '../src'
 import { generateError, generateSuccess } from './utils'
+
+const _schema = t.date().mutate(v => String(v))
+type _SchemaOutput = T.Output<typeof _schema> // Expected: string
+type _SchemaInput = T.Input<typeof _schema> // Expected: Date
 
 describe('date', () => {
   it('should be defined', () => {

@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, t } from '../src'
+import { IssueCode, T, t } from '../src'
 import { generateError, generateSuccess } from './utils'
+
+const _schema = t.intersection([t.object({ name: t.string() }), t.object({ age: t.number() })]).mutate(v => String(v))
+type _SchemaOutput = T.Output<typeof _schema> // Expected: string
+type _SchemaInput = T.Input<typeof _schema> // Expected: { name: string } & { age: number }
+
+const _complexSchema = t.intersection([t.object({ name: t.string().mutate(v => Number(v)) }), t.object({ age: t.number() })])
+type _ComplexSchemaOutput = T.Output<typeof _complexSchema> // Expected: { name: number } & { age: number }
+type _ComplexSchemaInput = T.Input<typeof _complexSchema> // Expected: { name: string } & { age: number }
 
 describe('intersection', () => {
   it('should be defined', () => {

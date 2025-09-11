@@ -2,6 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { IssueCode, T, t } from '../src'
 import { generateError, generateSuccess } from './utils'
 
+const _schema = t.tuple([t.string(), t.number()]).mutate(v => String(v))
+type _SchemaOutput = T.Output<typeof _schema> // Expected: string
+type _SchemaInput = T.Input<typeof _schema> // Expected: [string, number]
+
+const _complexSchema = t.tuple([t.string().mutate(v => Number(v)), t.number()])
+type _ComplexSchemaOutput = T.Output<typeof _complexSchema> // Expected: [number, number]
+type _ComplexSchemaInput = T.Input<typeof _complexSchema> // Expected: [string, number]
+
 describe('tuple', () => {
   it('should be defined', () => {
     expect(t.tuple).toBeDefined()

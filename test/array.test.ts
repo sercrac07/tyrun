@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, t } from '../src'
+import { IssueCode, T, t } from '../src'
 import { generateError, generateSuccess } from './utils'
+
+const _schema = t.array(t.string()).mutate(v => String(v))
+type _SchemaOutput = T.Output<typeof _schema> // Expected: string
+type _SchemaInput = T.Input<typeof _schema> // Expected: string[]
+
+const _complexSchema = t.array(t.string().mutate(v => Number(v)))
+type _ComplexSchemaOutput = T.Output<typeof _complexSchema> // Expected: number[]
+type _ComplexSchemaInput = T.Input<typeof _complexSchema> // Expected: string[]
 
 describe('array', () => {
   it('should be defined', () => {
