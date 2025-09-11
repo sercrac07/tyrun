@@ -1,7 +1,7 @@
 {
   "name": "tyrun",
   "version": "3.0.0",
-  "description": "Validate your input types in runtime",
+  "description": "Lightweight runtime type validator with extensible schemas and transforms",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

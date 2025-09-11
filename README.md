@@ -1,6 +1,6 @@
 # Tyrun
 
-Validate your input types in runtime.
+`tyrun` is a lightweight runtime type validator for JavaScript and TypeScript. Define extensible schemas, add custom validation rules, and optionally transform inputs during validation. Designed for minimal overhead and easy integration into node and browser projects.
 
 ## Instalation
 
