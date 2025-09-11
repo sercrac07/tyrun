@@ -15,7 +15,7 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
     if (this.__coerce) value = Number(value)
     value = this.runPreprocessors(value)
 
-    if (typeof value !== 'number') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+    if (typeof value !== 'number' || Number.isNaN(value)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = this.runValidators(value)
     if (errors.length) return { errors }
@@ -28,7 +28,7 @@ export class NumberSchema extends BaseSchema<number> implements TyrunNumber {
     if (this.__coerce) value = Number(value)
     value = await this.runPreprocessorsAsync(value)
 
-    if (typeof value !== 'number') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+    if (typeof value !== 'number' || Number.isNaN(value)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
 
     const errors = await this.runValidatorsAsync(value)
     if (errors.length) return { errors }
