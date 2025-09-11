@@ -21,8 +21,11 @@
   },
   "keywords": [
     "runtime",
-    "types",
-    "schemas"
+    "type-check",
+    "validator",
+    "schema",
+    "typescript",
+    "lightweight"
   ],
   "author": "sercrac07",
   "license": "MIT",
