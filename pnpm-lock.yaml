@@ -9,10 +9,10 @@ importers:
   .:
     devDependencies:
       '@eslint/js':
-        specifier: ^9.34.0
+        specifier: 9.34.0
         version: 9.34.0
       eslint:
-        specifier: ^9.34.0
+        specifier: 9.34.0
         version: 9.34.0
       tsup:
         specifier: 8.5.0
@@ -21,10 +21,10 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
       typescript-eslint:
-        specifier: ^8.41.0
+        specifier: 8.41.0
         version: 8.41.0(eslint@9.34.0)(typescript@5.9.2)
       vitest:
-        specifier: ^3.2.4
+        specifier: 3.2.4
         version: 3.2.4
 
 packages:
