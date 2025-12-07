@@ -163,3 +163,25 @@ export interface TyrunDateType extends TyrunBaseType<Date, Date> {
    */
   max(value: Date, error?: string | ErrorConfig): this
 }
+
+export type TyrunFileConfig = {
+  /**
+   * Error message to be used when the input type is invalid.
+   */
+  error: string
+}
+export interface TyrunFileType extends TyrunBaseType<File, File> {
+  readonly type: 'file'
+  /**
+   * Ensures file size is greater than or equal to `bytes`.
+   */
+  min(bytes: number, error?: string | ErrorConfig): this
+  /**
+   * Ensures file size is less than or equal to `bytes`.
+   */
+  max(bytes: number, error?: string | ErrorConfig): this
+  /**
+   * Ensures file type is one of the provided mime types.
+   */
+  mime(mimeTypes: string[], error?: string | ErrorConfig): this
+}
