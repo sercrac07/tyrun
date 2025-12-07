@@ -1,85 +1,98 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, T, t } from '../src'
-import { generateError, generateSuccess } from './utils'
+import type { Expect } from './utils'
 
-const _schema = t.any().mutate(v => String(v))
-type _SchemaOutput = T.Output<typeof _schema> // Expected: string
-type _SchemaInput = T.Input<typeof _schema> // Expected: any
+import t, { errors, type T } from '../src'
 
-describe('any', () => {
+const _schema = t.any()
+const _input: Expect<T.Input<typeof _schema>, any> = null as any
+const _output: Expect<T.Output<typeof _schema>, any> = null as any
+
+describe('any schema', () => {
   it('should be defined', () => {
     expect(t.any).toBeDefined()
   })
 
-  const data = 'string'
+  it('should parse', async () => {
+    expect(t.any().parse('foo')).toEqual('foo')
+    await expect(t.any().parseAsync('foo')).resolves.toEqual('foo')
 
-  it('should parse', () => {
-    expect(t.any().parse(data)).toEqual(generateSuccess(data))
-    expect(t.any().parse(5)).toEqual(generateSuccess(5))
-    expect(t.any().parse(true)).toEqual(generateSuccess(true))
-    expect(t.any().parse({})).toEqual(generateSuccess({}))
-    expect(t.any().parse([])).toEqual(generateSuccess([]))
-    expect(t.any().optional().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.any().nullable().parse(null)).toEqual(generateSuccess(null))
-    expect(t.any().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.any().nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.any().safeParse('foo')).toEqual({ success: true, data: 'foo' })
+    await expect(t.any().safeParseAsync('foo')).resolves.toEqual({ success: true, data: 'foo' })
+  })
+
+  it('should parse default value', async () => {
+    expect(t.any().default('foo').parse(undefined)).toEqual('foo')
     expect(
       t
         .any()
-        .transform(async v => v.toUpperCase())
-        .parse(data)
-    ).toEqual(generateSuccess(data))
-    expect(t.any().default(data).parse(undefined)).toEqual(generateSuccess(data))
-    expect(
-      t
-        .any()
-        .preprocess(() => data)
+        .default(() => 'foo')
         .parse(undefined)
-    ).toEqual(generateSuccess(data))
-  })
-
-  it('should parse async', async () => {
-    expect(
-      await t
+    ).toEqual('foo')
+    await expect(
+      t
         .any()
-        .transform(async v => v.toUpperCase())
-        .parseAsync(data)
-    ).toEqual(generateSuccess(data.toUpperCase()))
+        .default(async () => 'foo')
+        .parseAsync(undefined)
+    ).resolves.toEqual('foo')
   })
 
-  it('should validate', () => {
+  it('should throw `TyrunRuntimeError`', () => {
+    expect(() =>
+      t
+        .any()
+        .default(async () => 'foo')
+        .parse(undefined)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .any()
+        .validate(async () => 'Invalid value')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .any()
+        .process(async () => 'foo')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .any()
+        .preprocess(async () => 'foo')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+  })
+
+  it('should parse with custom validators', () => {
     expect(
       t
         .any()
-        .refine(v => typeof v === 'string')
-        .parse(data)
-    ).toEqual(generateSuccess(data))
+        .validate(v => (v === 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toEqual('foo')
   })
 
-  it('should not validate', () => {
+  it('should fail parse with custom validators', () => {
+    expect(() =>
+      t
+        .any()
+        .validate(v => (v !== 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom processors and preprocessors', () => {
     expect(
       t
         .any()
-        .refine(v => typeof v === 'number')
-        .parse(data)
-    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
-  })
-
-  it('should transform', () => {
+        .process(v => v.trim())
+        .parse(' foo ')
+    ).toEqual('foo')
     expect(
       t
         .any()
-        .transform(v => v.toUpperCase())
-        .parse(data)
-    ).toEqual(generateSuccess(data.toUpperCase()))
-  })
-
-  it('should mutate', () => {
-    expect(
-      t
-        .any()
-        .mutate(v => Number(v))
-        .parse(data)
-    ).toEqual(generateSuccess(Number(data)))
+        .preprocess<string>(v => v.trim())
+        .parse(' foo ')
+    ).toEqual('foo')
   })
 })

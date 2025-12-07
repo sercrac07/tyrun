@@ -1,95 +1,151 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, T, t } from '../src'
-import { generateError, generateSuccess } from './utils'
+import type { Expect } from './utils'
 
-const _schema = t.intersection([t.object({ name: t.string() }), t.object({ age: t.number() })]).mutate(v => String(v))
-type _SchemaOutput = T.Output<typeof _schema> // Expected: string
-type _SchemaInput = T.Input<typeof _schema> // Expected: { name: string } & { age: number }
+import t, { constants, errors, type T } from '../src'
 
-const _complexSchema = t.intersection([t.object({ name: t.string().mutate(v => Number(v)) }), t.object({ age: t.number() })])
-type _ComplexSchemaOutput = T.Output<typeof _complexSchema> // Expected: { name: number } & { age: number }
-type _ComplexSchemaInput = T.Input<typeof _complexSchema> // Expected: { name: string } & { age: number }
+const _schema = t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+const _input: Expect<T.Input<typeof _schema>, string> = null as any
+const _output: Expect<T.Output<typeof _schema>, string> = null as any
 
-describe('intersection', () => {
+describe('intersection schema', () => {
   it('should be defined', () => {
     expect(t.intersection).toBeDefined()
   })
 
-  const schema = [t.object({ name: t.string() }), t.object({ age: t.number() })]
-  const data = { name: 'John', age: 18 }
+  it('should parse', async () => {
+    expect(t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse('foo')).toEqual('foo')
+    await expect(t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parseAsync('foo')).resolves.toEqual('foo')
 
-  it('should parse', () => {
-    expect(t.intersection(schema).parse(data)).toEqual(generateSuccess(data))
-    expect(t.intersection(schema).optional().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.intersection(schema).nullable().parse(null)).toEqual(generateSuccess(null))
-    expect(t.intersection(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.intersection(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).safeParse('foo')).toEqual({ success: true, data: 'foo' })
+    await expect(t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).safeParseAsync('foo')).resolves.toEqual({ success: true, data: 'foo' })
+  })
+
+  it('should parse default value', async () => {
     expect(
       t
-        .intersection(schema)
-        .transform(async v => ({ ...v, name: v.name.toUpperCase() }))
-        .parse(data)
-    ).toEqual(generateSuccess(data))
-    expect(t.intersection(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
-    expect(
-      t
-        .intersection(schema)
-        .preprocess(() => data)
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .default('foo')
         .parse(undefined)
-    ).toEqual(generateSuccess(data))
-  })
-
-  it('should not parse', () => {
-    expect(t.intersection(schema).parse({ name: 'John' })).toEqual(generateError({ message: 'Value must be a number', path: ['age'], code: IssueCode.InvalidType }))
-    expect(t.intersection(schema).parse({ age: 18 })).toEqual(generateError({ message: 'Value must be a string', path: ['name'], code: IssueCode.InvalidType }))
-    expect(t.intersection(schema).parse('string')).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }, { message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
-    expect(t.intersection(schema).parse(1)).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }, { message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
-    expect(t.intersection(schema).parse(true)).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }, { message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
-    expect(t.intersection(schema).parse([])).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }, { message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
-  })
-
-  it('should parse async', async () => {
-    expect(
-      await t
-        .intersection(schema)
-        .transform(async v => ({ ...v, name: v.name.toUpperCase() }))
-        .parseAsync(data)
-    ).toEqual(generateSuccess({ ...data, name: data.name.toUpperCase() }))
-  })
-
-  it('should validate', () => {
+    ).toEqual('foo')
     expect(
       t
-        .intersection(schema)
-        .refine(v => v.name === 'John')
-        .parse(data)
-    ).toEqual(generateSuccess(data))
-  })
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .default(() => 'foo')
+        .parse(undefined)
+    ).toEqual('foo')
+    await expect(
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .default(async () => 'foo')
+        .parseAsync(undefined)
+    ).resolves.toEqual('foo')
 
-  it('should not validate', () => {
     expect(
       t
-        .intersection(schema)
-        .refine(v => v.name === 'Doe')
-        .parse(data)
-    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
-  })
-
-  it('should transform', () => {
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .fallback('foo')
+        .parse(true)
+    ).toEqual('foo')
     expect(
       t
-        .intersection(schema)
-        .transform(v => ({ ...v, name: v.name.toUpperCase() }))
-        .parse(data)
-    ).toEqual(generateSuccess({ ...data, name: data.name.toUpperCase() }))
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .fallback(() => 'foo')
+        .parse(true)
+    ).toEqual('foo')
+    await expect(
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .fallback(async () => 'foo')
+        .parseAsync(true)
+    ).resolves.toEqual('foo')
   })
 
-  it('should transform', () => {
+  it('should fail parse', async () => {
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse(true)).toThrow(errors.TyrunError)
+    await expect(t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parseAsync(false)).rejects.toThrow(errors.TyrunError)
+
+    expect(t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).safeParse(true)).toEqual({
+      success: false,
+      issues: [
+        { code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] },
+        { code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] },
+      ],
+    })
+    await expect(t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).safeParseAsync(false)).resolves.toEqual({
+      success: false,
+      issues: [
+        { code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] },
+        { code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] },
+      ],
+    })
+
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse(123n)).toThrow(errors.TyrunError)
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse(Symbol())).toThrow(errors.TyrunError)
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse(undefined)).toThrow(errors.TyrunError)
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse(null)).toThrow(errors.TyrunError)
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse({})).toThrow(errors.TyrunError)
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse([])).toThrow(errors.TyrunError)
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse(new Date())).toThrow(errors.TyrunError)
+    expect(() => t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])]).parse(new File([''], 'bar'))).toThrow(errors.TyrunError)
+  })
+
+  it('should throw `TyrunRuntimeError`', () => {
+    expect(() =>
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .default(async () => 'foo')
+        .parse(undefined)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .validate(async () => 'Invalid value')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .process(async () => 'foo')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .preprocess(async () => 'foo')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+  })
+
+  it('should parse with custom validators', () => {
     expect(
       t
-        .intersection(schema)
-        .mutate(v => String(v))
-        .parse(data)
-    ).toEqual(generateSuccess(String(data)))
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .validate(v => (v === 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toEqual('foo')
+  })
+
+  it('should fail parse with custom validators', () => {
+    expect(() =>
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .validate(v => (v !== 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom processors and preprocessors', () => {
+    expect(
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .process(v => v.trim())
+        .parse(' foo ')
+    ).toEqual('foo')
+    expect(
+      t
+        .intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
+        .preprocess<(string | number) & (string | boolean)>(v => v.trim())
+        .parse(' foo ')
+    ).toEqual('foo')
   })
 })

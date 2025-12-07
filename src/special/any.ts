@@ -1,31 +1,67 @@
-import { BaseSchema } from '../core/base'
-import type { ParseResult, TyrunAny } from '../types'
+import { TyrunBaseSchema } from '../core/base'
+import { TyrunError } from '../errors'
+import type { Result, TyrunBaseConfig } from '../types'
+import type { TyrunAnyType } from './types'
 
-export class AnySchema extends BaseSchema<any> implements TyrunAny {
-  public readonly type = 'any'
+export class TyrunAnySchema extends TyrunBaseSchema<any, any, {}> implements TyrunAnyType {
+  public readonly type: 'any' = 'any' as const
 
-  constructor() {
-    super()
+  constructor(config: TyrunBaseConfig<{}, any, any>) {
+    super(config)
   }
 
-  public override parse(value: unknown): ParseResult<any> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = this.runPreprocessors(value)
+  public override parse(input: unknown): any {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return this.runDefault()
 
-    const errors = this.runValidators(value)
-    if (errors.length) return { errors }
+      const preprocessed = this.runPreprocessors(input)
 
-    const v = this.runTransformers(value)
-    return { data: v }
+      const issues = this.runValidators(preprocessed)
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = this.runProcessors(preprocessed)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return this.runFallback()
+      throw error
+    }
   }
-  public override async parseAsync(value: unknown): Promise<ParseResult<any>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = await this.runPreprocessorsAsync(value)
+  public override async parseAsync(input: unknown): Promise<any> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return await this.runDefaultAsync()
 
-    const errors = await this.runValidatorsAsync(value)
-    if (errors.length) return { errors }
+      const preprocessed = await this.runPreprocessorsAsync(input)
 
-    const v = await this.runTransformersAsync(value)
-    return { data: v }
+      const issues = await this.runValidatorsAsync(preprocessed)
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = await this.runProcessorsAsync(preprocessed)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return await this.runFallbackAsync()
+      throw error
+    }
+  }
+  public override safeParse(input: unknown): Result<any> {
+    try {
+      const data = this.parse(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+  public override async safeParseAsync(input: unknown): Promise<Result<any>> {
+    try {
+      const data = await this.parseAsync(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+
+  public override clone(): TyrunAnySchema {
+    return new TyrunAnySchema(this.__config)
   }
 }

@@ -1,137 +1,141 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, T, t } from '../src'
-import { generateError, generateSuccess } from './utils'
+import type { Expect } from './utils'
 
-const _schema = t.union([t.string(), t.number()]).mutate(v => String(v))
-type _SchemaOutput = T.Output<typeof _schema> // Expected: string
-type _SchemaInput = T.Input<typeof _schema> // Expected: string | number
+import t, { constants, errors, type T } from '../src'
 
-const _complexSchema = t.union([t.string().mutate(v => Number(v)), t.number()])
-type _ComplexSchemaOutput = T.Output<typeof _complexSchema> // Expected: number
-type _ComplexSchemaInput = T.Input<typeof _complexSchema> // Expected: string | number
+const _schema = t.union([t.string(), t.number()])
+const _input: Expect<T.Input<typeof _schema>, string | number> = null as any
+const _output: Expect<T.Output<typeof _schema>, string | number> = null as any
 
-describe('union', () => {
+describe('union schema', () => {
   it('should be defined', () => {
     expect(t.union).toBeDefined()
   })
 
-  const schema = [t.string(), t.number()]
-  const dataString = 'string'
-  const dataNumber = 5
+  it('should parse', async () => {
+    expect(t.union([t.string(), t.number()]).parse('foo')).toEqual('foo')
+    await expect(t.union([t.string(), t.number()]).parseAsync('foo')).resolves.toEqual('foo')
 
-  it('should parse', () => {
-    expect(t.union(schema).parse(dataString)).toEqual(generateSuccess(dataString))
-    expect(t.union(schema).parse(dataNumber)).toEqual(generateSuccess(dataNumber))
-    expect(t.union(schema).optional().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.union(schema).nullable().parse(null)).toEqual(generateSuccess(null))
-    expect(t.union(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.union(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.union([t.string(), t.number()]).safeParse('foo')).toEqual({ success: true, data: 'foo' })
+    await expect(t.union([t.string(), t.number()]).safeParseAsync('foo')).resolves.toEqual({ success: true, data: 'foo' })
+  })
+
+  it('should parse default value', async () => {
+    expect(t.union([t.string(), t.number()]).default('foo').parse(undefined)).toEqual('foo')
     expect(
       t
-        .union(schema)
-        .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
-        .parse(dataString)
-    ).toEqual(generateSuccess(dataString))
-    expect(
-      t
-        .union(schema)
-        .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
-        .parse(dataNumber)
-    ).toEqual(generateSuccess(dataNumber))
-    expect(t.union(schema).default(dataString).parse(undefined)).toEqual(generateSuccess(dataString))
-    expect(t.union(schema).default(dataNumber).parse(undefined)).toEqual(generateSuccess(dataNumber))
-    expect(
-      t
-        .union(schema)
-        .preprocess(() => dataString)
+        .union([t.string(), t.number()])
+        .default(() => 'foo')
         .parse(undefined)
-    ).toEqual(generateSuccess(dataString))
+    ).toEqual('foo')
+    await expect(
+      t
+        .union([t.string(), t.number()])
+        .default(async () => 'foo')
+        .parseAsync(undefined)
+    ).resolves.toEqual('foo')
+
+    expect(t.union([t.string(), t.number()]).fallback('foo').parse(true)).toEqual('foo')
     expect(
       t
-        .union(schema)
-        .preprocess(() => dataNumber)
+        .union([t.string(), t.number()])
+        .fallback(() => 'foo')
+        .parse(true)
+    ).toEqual('foo')
+    await expect(
+      t
+        .union([t.string(), t.number()])
+        .fallback(async () => 'foo')
+        .parseAsync(true)
+    ).resolves.toEqual('foo')
+  })
+
+  it('should fail parse', async () => {
+    expect(() => t.union([t.string(), t.number()]).parse(true)).toThrow(errors.TyrunError)
+    await expect(t.union([t.string(), t.number()]).parseAsync(false)).rejects.toThrow(errors.TyrunError)
+
+    expect(t.union([t.string(), t.number()]).safeParse(true)).toEqual({
+      success: false,
+      issues: [
+        { code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] },
+        { code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] },
+      ],
+    })
+    await expect(t.union([t.string(), t.number()]).safeParseAsync(false)).resolves.toEqual({
+      success: false,
+      issues: [
+        { code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] },
+        { code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] },
+      ],
+    })
+
+    expect(() => t.union([t.string(), t.number()]).parse(123n)).toThrow(errors.TyrunError)
+    expect(() => t.union([t.string(), t.number()]).parse(Symbol())).toThrow(errors.TyrunError)
+    expect(() => t.union([t.string(), t.number()]).parse(undefined)).toThrow(errors.TyrunError)
+    expect(() => t.union([t.string(), t.number()]).parse(null)).toThrow(errors.TyrunError)
+    expect(() => t.union([t.string(), t.number()]).parse({})).toThrow(errors.TyrunError)
+    expect(() => t.union([t.string(), t.number()]).parse([])).toThrow(errors.TyrunError)
+    expect(() => t.union([t.string(), t.number()]).parse(new Date())).toThrow(errors.TyrunError)
+    expect(() => t.union([t.string(), t.number()]).parse(new File([''], 'bar'))).toThrow(errors.TyrunError)
+  })
+
+  it('should throw `TyrunRuntimeError`', () => {
+    expect(() =>
+      t
+        .union([t.string(), t.number()])
+        .default(async () => 'foo')
         .parse(undefined)
-    ).toEqual(generateSuccess(dataNumber))
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .union([t.string(), t.number()])
+        .validate(async () => 'Invalid value')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .union([t.string(), t.number()])
+        .process(async () => 'foo')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .union([t.string(), t.number()])
+        .preprocess(async () => 'foo')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
   })
 
-  it('should not parse', () => {
-    expect(t.union(schema).parse(true)).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }, { message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
-    expect(t.union(schema).parse({})).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }, { message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
-    expect(t.union(schema).parse([])).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }, { message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
+  it('should parse with custom validators', () => {
+    expect(
+      t
+        .union([t.string(), t.number()])
+        .validate(v => (v === 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toEqual('foo')
   })
 
-  it('should parse async', async () => {
-    expect(
-      await t
-        .union(schema)
-        .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
-        .parseAsync(dataString)
-    ).toEqual(generateSuccess(dataString.toUpperCase()))
-    expect(
-      await t
-        .union(schema)
-        .transform(async v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
-        .parseAsync(dataNumber)
-    ).toEqual(generateSuccess(dataNumber * 2))
+  it('should fail parse with custom validators', () => {
+    expect(() =>
+      t
+        .union([t.string(), t.number()])
+        .validate(v => (v !== 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toThrow(errors.TyrunError)
   })
 
-  it('should validate', () => {
+  it('should parse with custom processors and preprocessors', () => {
     expect(
       t
-        .union(schema)
-        .refine(v => typeof v === 'string')
-        .parse(dataString)
-    ).toEqual(generateSuccess(dataString))
+        .union([t.string(), t.number()])
+        .process(v => (typeof v === 'string' ? v.trim() : v * 2))
+        .parse(' foo ')
+    ).toEqual('foo')
     expect(
       t
-        .union(schema)
-        .refine(v => typeof v === 'number')
-        .parse(dataNumber)
-    ).toEqual(generateSuccess(dataNumber))
-  })
-
-  it('should not validate', () => {
-    expect(
-      t
-        .union(schema)
-        .refine(v => typeof v === 'number')
-        .parse(dataString)
-    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }, { message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
-    expect(
-      t
-        .union(schema)
-        .refine(v => typeof v === 'string')
-        .parse(dataNumber)
-    ).toEqual(generateError({ message: 'Value must be a string', path: [], code: IssueCode.InvalidType }, { message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
-  })
-
-  it('should transform', () => {
-    expect(
-      t
-        .union(schema)
-        .transform(v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
-        .parse(dataString)
-    ).toEqual(generateSuccess(dataString.toUpperCase()))
-    expect(
-      t
-        .union(schema)
-        .transform(v => (typeof v === 'string' ? v.toUpperCase() : v * 2))
-        .parse(dataNumber)
-    ).toEqual(generateSuccess(dataNumber * 2))
-  })
-
-  it('should mutate', () => {
-    expect(
-      t
-        .union(schema)
-        .mutate(v => (typeof v === 'string' ? Number(v) : String(v)))
-        .parse(dataString)
-    ).toEqual(generateSuccess(Number(dataString)))
-    expect(
-      t
-        .union(schema)
-        .mutate(v => (typeof v === 'string' ? Number(v) : String(v)))
-        .parse(dataNumber)
-    ).toEqual(generateSuccess(String(dataNumber)))
+        .union([t.string(), t.number()])
+        .preprocess<string | number>(v => (typeof v === 'string' ? v.trim() : v))
+        .parse(' foo ')
+    ).toEqual('foo')
   })
 })

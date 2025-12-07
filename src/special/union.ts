@@ -1,53 +1,89 @@
-import { BaseSchema } from '../core/base'
-import type { Issue, Output, ParseResult, Tyrun, TyrunUnion } from '../types'
+import { TyrunBaseSchema } from '../core/base'
+import { TyrunError } from '../errors'
+import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
+import type { TyrunUnionType } from './types'
 
-export class UnionSchema<S extends Tyrun<any>> extends BaseSchema<Output<S>> implements TyrunUnion<S> {
-  public readonly type = 'union'
+export class TyrunUnionSchema<T extends TyrunBaseType<any, any>[]> extends TyrunBaseSchema<Input<T[number]>, Output<T[number]>, {}> implements TyrunUnionType<T> {
+  public readonly type: 'union' = 'union' as const
 
-  constructor(private schemas: S[]) {
-    super()
+  constructor(public readonly schema: [...T], config: TyrunBaseConfig<{}, Input<T[number]>, Output<T[number]>>) {
+    super(config)
   }
 
-  public override parse(value: unknown): ParseResult<Output<S>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = this.runPreprocessors(value)
+  public override parse(input: unknown): Output<T[number]> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return this.runDefault()
 
-    const errors: Issue[] = []
+      const preprocessed = this.runPreprocessors(input)
 
-    for (const schema of this.schemas) {
-      const res = schema.parse(value)
-      if (res.errors) errors.push(...res.errors)
-      else {
-        const validatorErrors = this.runValidators(res.data)
-        if (validatorErrors.length) errors.push(...validatorErrors)
+      const issues: Issue[] = []
+
+      for (const schema of this.schema) {
+        const result = schema.safeParse(preprocessed)
+        if (!result.success) issues.push(...result.issues)
         else {
-          const v = this.runTransformers(res.data)
-          return { data: v }
+          const newIssues = this.runValidators(result.data)
+          if (newIssues.length > 0) issues.push(...newIssues)
+          else {
+            const processed = this.runProcessors(result.data)
+            return processed
+          }
         }
       }
-    }
 
-    return { errors }
+      throw new TyrunError(issues)
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return this.runFallback()
+      throw error
+    }
   }
-  public override async parseAsync(value: unknown): Promise<ParseResult<Output<S>>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = await this.runPreprocessorsAsync(value)
+  public override async parseAsync(input: unknown): Promise<Output<T[number]>> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return await this.runDefaultAsync()
 
-    const errors: Issue[] = []
+      const preprocessed = await this.runPreprocessorsAsync(input)
 
-    for (const schema of this.schemas) {
-      const res = await schema.parseAsync(value)
-      if (res.errors) errors.push(...res.errors)
-      else {
-        const validatorErrors = await this.runValidatorsAsync(res.data)
-        if (validatorErrors.length) errors.push(...validatorErrors)
+      const issues: Issue[] = []
+
+      for (const schema of this.schema) {
+        const result = await schema.safeParseAsync(preprocessed)
+        if (!result.success) issues.push(...result.issues)
         else {
-          const v = await this.runTransformersAsync(res.data)
-          return { data: v }
+          const newIssues = await this.runValidatorsAsync(result.data)
+          if (newIssues.length > 0) issues.push(...newIssues)
+          else {
+            const processed = await this.runProcessorsAsync(result.data)
+            return processed
+          }
         }
       }
-    }
 
-    return { errors }
+      throw new TyrunError(issues)
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return await this.runFallbackAsync()
+      throw error
+    }
+  }
+  public override safeParse(input: unknown): Result<Output<T[number]>> {
+    try {
+      const data = this.parse(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+  public override async safeParseAsync(input: unknown): Promise<Result<Output<T[number]>>> {
+    try {
+      const data = await this.parseAsync(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+
+  public override clone(): TyrunUnionSchema<T> {
+    return new TyrunUnionSchema(this.schema, this.__config)
   }
 }
