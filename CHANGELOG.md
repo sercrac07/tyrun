@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Initial release
 - Runtime schema factories:
-  - Primitives: `string` (`nonEmpty`, `min`, `max`, `regex`, `email`, `url`), `number` (`min`, `max`, `integer`, `positive`, `negative`), `bigint` (`min`, `max`, `positive`, `negative`), `boolean`, `symbol`, `undefined`, `null`, `literal`
+  - Primitives: `string` (`nonEmpty`, `min`, `max`, `regex`, `email`, `url`), `number` (`min`, `max`, `integer`, `positive`, `negative`), `bigint` (`min`, `max`, `positive`, `negative`), `boolean`, `symbol`, `undefined`, `null`, `literal`, `date` (`min`, `max`), `file` (`min`, `max`, `mime`)
   - Structural: `array` (`nonEmpty`, `min`, `max`), `object`, `enum`, `record`, `tuple`
   - Special: `any`, `booleanish` (configurable `trueValues`/`falseValues`), `union`, `intersection`, `lazy`, `mutate`
   - Utility: `optional`, `nullable`, `nullish`

@@ -106,6 +106,27 @@ t.literal(99n)
 t.literal('ACTIVE').value // 'ACTIVE'
 ```
 
+### `t.date(error?)`
+
+Validators: `min(value)`, `max(value)`
+
+```ts
+t.date()
+t.date().min(new Date('2000-01-01'))
+t.date().max(new Date('2000-01-01'))
+```
+
+### `t.file(error?)`
+
+Validators: `min(bytes)`, `max(bytes)`, `mime(mimeTypes)`
+
+```ts
+t.file()
+t.file().min(1024)
+t.file().max(1024 * 1024)
+t.file().mime(['image/png', 'image/jpeg'])
+```
+
 ## Structural Schemas
 
 ### `t.array(schema, error?)`
