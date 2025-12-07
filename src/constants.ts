@@ -38,6 +38,11 @@ export const ERRORS = {
     MIN: (value: Date) => `Date must be after ${value.toDateString()}`,
     MAX: (value: Date) => `Date must be before ${value.toDateString()}`,
   },
+  FILE: {
+    MIN: (bytes: number) => `File must be at least ${bytes} bytes`,
+    MAX: (bytes: number) => `File must be at most ${bytes} bytes`,
+    MIME: (mimeTypes: string[]) => `File type must be one of ${mimeTypes.join(', ')}`,
+  },
   ENUM: {
     TYPE: (values: TyrunEnumParts[]) => `Enum must be one of ${values.join(', ')}`,
   },
@@ -82,6 +87,11 @@ export const CODES = {
   DATE: {
     MIN: 'date.min',
     MAX: 'date.max',
+  },
+  FILE: {
+    MIN: 'file.min',
+    MAX: 'file.max',
+    MIME: 'file.mime',
   },
   ARRAY: {
     NON_EMPTY: 'array.non_empty',

@@ -2,6 +2,7 @@ import { ERRORS } from './constants'
 import { TyrunBigintSchema } from './primitives/bigint'
 import { TyrunBooleanSchema } from './primitives/boolean'
 import { TyrunDateSchema } from './primitives/date'
+import { TyrunFileSchema } from './primitives/file'
 import { TyrunLiteralSchema } from './primitives/literal'
 import { TyrunNullSchema } from './primitives/null'
 import { TyrunNumberSchema } from './primitives/number'
@@ -79,6 +80,12 @@ export function literal<T extends TyrunLiteralParts>(value: T, error: string = E
  */
 export function date(error: string = ERRORS.BASE.TYPE) {
   return new TyrunDateSchema({ error, default: undefined, fallback: undefined, validators: [], processors: [], preprocessors: [] })
+}
+/**
+ * Creates a file primitive schema.
+ */
+export function file(error: string = ERRORS.BASE.TYPE) {
+  return new TyrunFileSchema({ error, default: undefined, fallback: undefined, validators: [], processors: [], preprocessors: [] })
 }
 
 /**
