@@ -145,3 +145,21 @@ export interface TyrunLiteralType<T extends TyrunLiteralParts> extends TyrunBase
    */
   readonly value: T
 }
+
+export type TyrunDateConfig = {
+  /**
+   * Error message to be used when the input type is invalid.
+   */
+  error: string
+}
+export interface TyrunDateType extends TyrunBaseType<Date, Date> {
+  readonly type: 'date'
+  /**
+   * Ensures date is greater than or equal to `value`
+   */
+  min(value: Date, error?: string | ErrorConfig): this
+  /**
+   * Ensures date is less than or equal to `value`.
+   */
+  max(value: Date, error?: string | ErrorConfig): this
+}
