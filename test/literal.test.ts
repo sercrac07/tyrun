@@ -1,89 +1,135 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, T, t } from '../src'
-import { generateError, generateSuccess } from './utils'
+import type { Expect } from './utils'
 
-const _schema = t.literal('literal').mutate(v => Number(v))
-type _SchemaOutput = T.Output<typeof _schema> // Expected: number
-type _SchemaInput = T.Input<typeof _schema> // Expected: 'literal'
+import t, { constants, errors, type T } from '../src'
 
-describe('literal', () => {
+const _schema = t.literal('foo')
+const _input: Expect<T.Input<typeof _schema>, 'foo'> = null as any
+const _output: Expect<T.Output<typeof _schema>, 'foo'> = null as any
+
+describe('literal schema', () => {
   it('should be defined', () => {
     expect(t.literal).toBeDefined()
   })
 
-  const schema = 'literal'
-  const data = 'literal'
+  it('should parse', async () => {
+    expect(t.literal('foo').parse('foo')).toEqual('foo')
+    await expect(t.literal('foo').parseAsync('foo')).resolves.toEqual('foo')
 
-  it('should parse', () => {
-    expect(t.literal(schema).parse(data)).toEqual(generateSuccess(data))
-    expect(t.literal(schema).optional().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.literal(schema).nullable().parse(null)).toEqual(generateSuccess(null))
-    expect(t.literal(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.literal(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.literal('foo').safeParse('foo')).toEqual({ success: true, data: 'foo' })
+    await expect(t.literal('foo').safeParseAsync('foo')).resolves.toEqual({ success: true, data: 'foo' })
+  })
+
+  it('should parse default value', async () => {
+    expect(t.literal('foo').default('foo').parse(undefined)).toEqual('foo')
     expect(
       t
-        .literal(schema)
-        .transform(async v => v)
-        .parse(data)
-    ).toEqual(generateSuccess(data))
-    expect(t.literal(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
-    expect(
-      t
-        .literal(schema)
-        .preprocess(() => data)
+        .literal('foo')
+        .default(() => 'foo')
         .parse(undefined)
-    ).toEqual(generateSuccess(data))
-  })
+    ).toEqual('foo')
+    await expect(
+      t
+        .literal('foo')
+        .default(async () => 'foo' as const)
+        .parseAsync(undefined)
+    ).resolves.toEqual('foo')
 
-  it('should not parse', () => {
-    expect(t.literal(schema).parse(1)).toEqual(generateError({ message: `Value must be equal to: ${schema}`, path: [], code: IssueCode.InvalidType }))
-    expect(t.literal(schema).parse(true)).toEqual(generateError({ message: `Value must be equal to: ${schema}`, path: [], code: IssueCode.InvalidType }))
-    expect(t.literal(schema).parse({})).toEqual(generateError({ message: `Value must be equal to: ${schema}`, path: [], code: IssueCode.InvalidType }))
-    expect(t.literal(schema).parse([])).toEqual(generateError({ message: `Value must be equal to: ${schema}`, path: [], code: IssueCode.InvalidType }))
-  })
-
-  it('should parse async', async () => {
-    expect(
-      await t
-        .literal(schema)
-        .transform(async v => v)
-        .parseAsync(data)
-    ).toEqual(generateSuccess(data))
-  })
-
-  it('should validate', () => {
+    expect(t.literal('foo').fallback('foo').parse('bar')).toEqual('foo')
     expect(
       t
-        .literal(schema)
-        .refine(v => v.length === 7)
-        .parse(data)
-    ).toEqual(generateSuccess(data))
+        .literal('foo')
+        .fallback(() => 'foo')
+        .parse('bar')
+    ).toEqual('foo')
+    await expect(
+      t
+        .literal('foo')
+        .fallback(async () => 'foo' as const)
+        .parseAsync('bar')
+    ).resolves.toEqual('foo')
   })
 
-  it('should not validate', () => {
-    expect(
-      t
-        .literal(schema)
-        .refine(v => v.length === 6)
-        .parse(data)
-    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
+  it('should fail parse', async () => {
+    expect(() => t.literal('foo').parse('bar')).toThrow(errors.TyrunError)
+    await expect(t.literal('foo').parseAsync('bar')).rejects.toThrow(errors.TyrunError)
+
+    expect(t.literal('foo').safeParse('bar')).toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.LITERAL.TYPE('foo'), path: [] }] })
+    await expect(t.literal('foo').safeParseAsync('bar')).resolves.toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.LITERAL.TYPE('foo'), path: [] }] })
+
+    expect(() => t.literal('foo').parse(123)).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse(123n)).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse(true)).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse(Symbol())).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse(undefined)).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse(null)).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse({})).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse([])).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse(new Date())).toThrow(errors.TyrunError)
+    expect(() => t.literal('foo').parse(new File([''], 'bar'))).toThrow(errors.TyrunError)
   })
 
-  it('should transform', () => {
-    expect(
-      t
-        .literal(schema)
-        .transform(v => v)
-        .parse(data)
-    ).toEqual(generateSuccess(data))
+  it('should access inner properties', () => {
+    expect(t.literal('foo').value).toEqual('foo')
   })
 
-  it('should mutate', () => {
+  it('should throw `TyrunRuntimeError`', () => {
+    expect(() =>
+      t
+        .literal('foo')
+        .default(async () => 'foo' as const)
+        .parse(undefined)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .literal('foo')
+        .validate(async () => 'Invalid value')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .literal('foo')
+        .process(async () => 'foo' as const)
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .literal('foo')
+        .preprocess(async () => 'foo' as const)
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+  })
+
+  it('should parse with custom validators', () => {
     expect(
       t
-        .literal(schema)
-        .mutate(v => Number(v))
-        .parse(data)
-    ).toEqual(generateSuccess(Number(data)))
+        .literal('foo')
+        .validate(v => (v === 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toEqual('foo')
+  })
+
+  it('should fail parse with custom validators', () => {
+    expect(() =>
+      t
+        .literal('foo')
+        .validate(v => (v !== 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom processors and preprocessors', () => {
+    expect(
+      t
+        .literal('foo')
+        .process(() => 'foo')
+        .parse('foo')
+    ).toEqual('foo')
+    expect(
+      t
+        .literal('foo')
+        .preprocess<'foo'>(() => 'foo')
+        .parse('bar')
+    ).toEqual('foo')
   })
 })

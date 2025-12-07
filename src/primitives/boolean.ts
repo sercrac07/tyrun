@@ -1,43 +1,72 @@
-import { IssueCode } from '../constants'
-import { BaseSchema } from '../core/base'
-import type { ParseResult, TyrunBoolean } from '../types'
+import { CODES, ERRORS } from '../constants'
+import { TyrunBaseSchema } from '../core/base'
+import { TyrunError } from '../errors'
+import type { Result, TyrunBaseConfig } from '../types'
+import type { TyrunBooleanConfig, TyrunBooleanType } from './types'
 
-export class BooleanSchema extends BaseSchema<boolean> implements TyrunBoolean {
-  public readonly type = 'boolean'
-  protected __coerce = false
+export class TyrunBooleanSchema extends TyrunBaseSchema<boolean, boolean, TyrunBooleanConfig> implements TyrunBooleanType {
+  public readonly type: 'boolean' = 'boolean' as const
 
-  constructor(private message: string = 'Value must be a boolean') {
-    super()
+  constructor(config: TyrunBaseConfig<TyrunBooleanConfig, boolean, boolean>) {
+    super(config)
   }
 
-  public override parse(value: unknown): ParseResult<boolean> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    if (this.__coerce) value = Boolean(value)
-    value = this.runPreprocessors(value)
+  public override parse(input: unknown): boolean {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return this.runDefault()
 
-    if (typeof value !== 'boolean') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = this.runPreprocessors(input)
 
-    const errors = this.runValidators(value)
-    if (errors.length) return { errors }
+      if (typeof preprocessed !== 'boolean') throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, ERRORS.BASE.TYPE, [], this.__config.error)])
 
-    const v = this.runTransformers(value)
-    return { data: v }
+      const issues = this.runValidators(preprocessed)
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = this.runProcessors(preprocessed)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return this.runFallback()
+      throw error
+    }
   }
-  public override async parseAsync(value: unknown): Promise<ParseResult<boolean>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    if (this.__coerce) value = Boolean(value)
-    value = await this.runPreprocessorsAsync(value)
+  public override async parseAsync(input: unknown): Promise<boolean> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return await this.runDefaultAsync()
 
-    if (typeof value !== 'boolean') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = await this.runPreprocessorsAsync(input)
 
-    const errors = await this.runValidatorsAsync(value)
-    if (errors.length) return { errors }
+      if (typeof preprocessed !== 'boolean') throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, ERRORS.BASE.TYPE, [], this.__config.error)])
 
-    const v = await this.runTransformersAsync(value)
-    return { data: v }
+      const issues = await this.runValidatorsAsync(preprocessed)
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = await this.runProcessorsAsync(preprocessed)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return await this.runFallbackAsync()
+      throw error
+    }
   }
-  public coerce(): this {
-    this.__coerce = true
-    return this
+  public override safeParse(input: unknown): Result<boolean> {
+    try {
+      const data = this.parse(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+  public override async safeParseAsync(input: unknown): Promise<Result<boolean>> {
+    try {
+      const data = await this.parseAsync(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+
+  public override clone(): TyrunBooleanSchema {
+    return new TyrunBooleanSchema(this.__config)
   }
 }

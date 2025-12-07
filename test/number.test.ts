@@ -1,93 +1,147 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, T, t } from '../src'
-import { generateError, generateSuccess } from './utils'
+import type { Expect } from './utils'
 
-const _schema = t.number().mutate(v => String(v))
-type _SchemaOutput = T.Output<typeof _schema> // Expected: string
-type _SchemaInput = T.Input<typeof _schema> // Expected: number
+import t, { constants, errors, type T } from '../src'
 
-describe('number', () => {
+const _schema = t.number()
+const _input: Expect<T.Input<typeof _schema>, number> = null as any
+const _output: Expect<T.Output<typeof _schema>, number> = null as any
+
+describe('number schema', () => {
   it('should be defined', () => {
     expect(t.number).toBeDefined()
   })
 
-  const data = 5
+  it('should parse', async () => {
+    expect(t.number().parse(123)).toEqual(123)
+    await expect(t.number().parseAsync(123)).resolves.toEqual(123)
 
-  it('should parse', () => {
-    expect(t.number().parse(data)).toEqual(generateSuccess(data))
-    expect(t.number().optional().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.number().nullable().parse(null)).toEqual(generateSuccess(null))
-    expect(t.number().nullish().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.number().nullish().parse(null)).toEqual(generateSuccess(null))
-    expect(t.number().coerce().parse('5')).toEqual(generateSuccess(data))
+    expect(t.number().safeParse(123)).toEqual({ success: true, data: 123 })
+    await expect(t.number().safeParseAsync(123)).resolves.toEqual({ success: true, data: 123 })
+  })
+
+  it('should parse default value', async () => {
+    expect(t.number().default(123).parse(undefined)).toEqual(123)
     expect(
       t
         .number()
-        .transform(async v => v * 2)
-        .parse(data)
-    ).toEqual(generateSuccess(data))
-    expect(t.number().default(data).parse(undefined)).toEqual(generateSuccess(data))
-    expect(
-      t
-        .number()
-        .preprocess(() => data)
+        .default(() => 123)
         .parse(undefined)
-    ).toEqual(generateSuccess(data))
-  })
-
-  it('should not parse', () => {
-    expect(t.number().parse('5')).toEqual(generateError({ message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
-    expect(t.number().parse(true)).toEqual(generateError({ message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
-    expect(t.number().parse({})).toEqual(generateError({ message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
-    expect(t.number().parse([])).toEqual(generateError({ message: 'Value must be a number', path: [], code: IssueCode.InvalidType }))
-  })
-
-  it('should parse async', async () => {
-    expect(
-      await t
+    ).toEqual(123)
+    await expect(
+      t
         .number()
-        .transform(async v => v * 2)
-        .parseAsync(data)
-    ).toEqual(generateSuccess(data * 2))
-  })
+        .default(async () => 123)
+        .parseAsync(undefined)
+    ).resolves.toEqual(123)
 
-  it('should validate', () => {
-    expect(t.number().min(5).parse(data)).toEqual(generateSuccess(data))
-    expect(t.number().max(5).parse(data)).toEqual(generateSuccess(data))
+    expect(t.number().fallback(123).parse('foo')).toEqual(123)
     expect(
       t
         .number()
-        .refine(v => v === 5)
-        .parse(data)
-    ).toEqual(generateSuccess(data))
+        .fallback(() => 123)
+        .parse('foo')
+    ).toEqual(123)
+    await expect(
+      t
+        .number()
+        .fallback(async () => 123)
+        .parseAsync('foo')
+    ).resolves.toEqual(123)
   })
 
-  it('should not validate', () => {
-    expect(t.number().min(6).parse(data)).toEqual(generateError({ message: 'Value must be greater or equal than 6', path: [], code: IssueCode.Min }))
-    expect(t.number().max(4).parse(data)).toEqual(generateError({ message: 'Value must be lower or equal than 4', path: [], code: IssueCode.Max }))
+  it('should fail parse', async () => {
+    expect(() => t.number().parse('foo')).toThrow(errors.TyrunError)
+    await expect(t.number().parseAsync('foo')).rejects.toThrow(errors.TyrunError)
+
+    expect(t.number().safeParse('foo')).toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] }] })
+    await expect(t.number().safeParseAsync('foo')).resolves.toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] }] })
+
+    expect(() => t.number().parse(NaN)).toThrow(errors.TyrunError)
+    expect(() => t.number().parse(123n)).toThrow(errors.TyrunError)
+    expect(() => t.number().parse(true)).toThrow(errors.TyrunError)
+    expect(() => t.number().parse(Symbol())).toThrow(errors.TyrunError)
+    expect(() => t.number().parse(undefined)).toThrow(errors.TyrunError)
+    expect(() => t.number().parse(null)).toThrow(errors.TyrunError)
+    expect(() => t.number().parse({})).toThrow(errors.TyrunError)
+    expect(() => t.number().parse([])).toThrow(errors.TyrunError)
+    expect(() => t.number().parse(new Date())).toThrow(errors.TyrunError)
+    expect(() => t.number().parse(new File([''], 'bar'))).toThrow(errors.TyrunError)
+  })
+
+  it('should throw `TyrunRuntimeError`', () => {
+    expect(() =>
+      t
+        .number()
+        .default(async () => 123)
+        .parse(undefined)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .number()
+        .validate(async () => 'Invalid value')
+        .parse(123)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .number()
+        .process(async () => 123)
+        .parse(123)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .number()
+        .preprocess(async () => 123)
+        .parse(123)
+    ).toThrow(errors.TyrunRuntimeError)
+  })
+
+  it('should parse with validators', () => {
+    expect(t.number().min(123).parse(123)).toEqual(123)
+    expect(t.number().max(123).parse(123)).toEqual(123)
+    expect(t.number().integer().parse(123)).toEqual(123)
+    expect(t.number().positive().parse(123)).toEqual(123)
+    expect(t.number().negative().parse(-123)).toEqual(-123)
+  })
+
+  it('should fail parse with validators', () => {
+    expect(() => t.number().min(124).parse(123)).toThrow(errors.TyrunError)
+    expect(() => t.number().max(122).parse(123)).toThrow(errors.TyrunError)
+    expect(() => t.number().integer().parse(123.123)).toThrow(errors.TyrunError)
+    expect(() => t.number().positive().parse(-123)).toThrow(errors.TyrunError)
+    expect(() => t.number().negative().parse(123)).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom validators', () => {
     expect(
       t
         .number()
-        .refine(v => v === 6)
-        .parse(data)
-    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
+        .validate(v => (v === 123 ? null : 'Invalid value'))
+        .parse(123)
+    ).toEqual(123)
   })
 
-  it('should transform', () => {
+  it('should fail parse with custom validators', () => {
+    expect(() =>
+      t
+        .number()
+        .validate(v => (v !== 123 ? null : 'Invalid value'))
+        .parse(123)
+    ).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom processors and preprocessors', () => {
     expect(
       t
         .number()
-        .transform(v => v * 2)
-        .parse(data)
-    ).toEqual(generateSuccess(data * 2))
-  })
-
-  it('should mutate', () => {
+        .process(v => v * 2)
+        .parse(123)
+    ).toEqual(246)
     expect(
       t
         .number()
-        .mutate(v => String(v))
-        .parse(data)
-    ).toEqual(generateSuccess(String(data)))
+        .preprocess<number>(v => v * 2)
+        .parse(123)
+    ).toEqual(246)
   })
 })

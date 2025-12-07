@@ -1,80 +1,110 @@
-import { IssueCode } from '../constants'
-import { BaseSchema } from '../core/base'
-import type { ParseResult, TyrunString } from '../types'
+import { CODES, ERRORS, REGEXES } from '../constants'
+import { TyrunBaseSchema } from '../core/base'
+import { TyrunError } from '../errors'
+import type { ErrorConfig, Result, TyrunBaseConfig } from '../types'
+import type { TyrunStringConfig, TyrunStringType } from './types'
 
-export type EmailConfig = {
-  /**
-   * @default 'Value must be a valid email address'
-   */
-  message?: string
-  /**
-   * @default /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-.]*)[a-z0-9_'+-]@([a-z0-9][a-z0-9-]*\.)+[a-z]{2,}$/i
-   */
-  regex?: RegExp
-}
-const DEFAULT_EMAIL_CONFIG: Required<EmailConfig> = {
-  message: 'Value must be a valid email address',
-  regex: /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-.]*)[a-z0-9_'+-]@([a-z0-9][a-z0-9-]*\.)+[a-z]{2,}$/i,
-}
+export class TyrunStringSchema extends TyrunBaseSchema<string, string, TyrunStringConfig> implements TyrunStringType {
+  public readonly type: 'string' = 'string' as const
 
-export class StringSchema extends BaseSchema<string> implements TyrunString {
-  public readonly type = 'string'
-  protected __coerce = false
-
-  constructor(private message: string = 'Value must be a string') {
-    super()
+  constructor(config: TyrunBaseConfig<TyrunStringConfig, string, string>) {
+    super(config)
   }
 
-  public override parse(value: unknown): ParseResult<string> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    if (this.__coerce) value = String(value)
-    value = this.runPreprocessors(value)
+  public override parse(input: unknown): string {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return this.runDefault()
 
-    if (typeof value !== 'string') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = this.runPreprocessors(input)
 
-    const errors = this.runValidators(value)
-    if (errors.length) return { errors }
+      if (typeof preprocessed !== 'string') throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, this.__config.error, [])])
 
-    const v = this.runTransformers(value)
-    return { data: v }
+      const issues = this.runValidators(preprocessed)
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = this.runProcessors(preprocessed)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return this.runFallback()
+      throw error
+    }
   }
-  public override async parseAsync(value: unknown): Promise<ParseResult<string>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    if (this.__coerce) value = String(value)
-    value = await this.runPreprocessorsAsync(value)
+  public override async parseAsync(input: unknown): Promise<string> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return await this.runDefaultAsync()
 
-    if (typeof value !== 'string') return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = await this.runPreprocessorsAsync(input)
 
-    const errors = await this.runValidatorsAsync(value)
-    if (errors.length) return { errors }
+      if (typeof preprocessed !== 'string') throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, this.__config.error, [])])
 
-    const v = await this.runTransformersAsync(value)
-    return { data: v }
+      const issues = await this.runValidatorsAsync(preprocessed)
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = await this.runProcessorsAsync(preprocessed)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return await this.runFallbackAsync()
+      throw error
+    }
   }
-  public coerce(): this {
-    this.__coerce = true
+  public override safeParse(input: unknown): Result<string> {
+    try {
+      const data = this.parse(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+  public override async safeParseAsync(input: unknown): Promise<Result<string>> {
+    try {
+      const data = await this.parseAsync(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+
+  public override clone(): TyrunStringSchema {
+    return new TyrunStringSchema(this.__config)
+  }
+
+  public nonEmpty(error?: string | ErrorConfig): this {
+    const issue = this.buildIssue(CODES.STRING.NON_EMPTY, ERRORS.STRING.NON_EMPTY, [], error)
+    this.__config.validators.push(v => (v.trim() === '' ? issue : null))
     return this
   }
-
-  public min(length: number, message: string = `Value must be at least ${length} characters long`): this {
-    this.validators.push([v => v.length >= length, message, IssueCode.Min])
+  public min(length: number, error?: string | ErrorConfig): this {
+    const issue = this.buildIssue(CODES.STRING.MIN, ERRORS.STRING.MIN(length), [], error)
+    this.__config.validators.push(v => (v.length < length ? issue : null))
     return this
   }
-  public max(length: number, message: string = `Value must be at most ${length} characters long`): this {
-    this.validators.push([v => v.length <= length, message, IssueCode.Max])
+  public max(length: number, error?: string | ErrorConfig): this {
+    const issue = this.buildIssue(CODES.STRING.MAX, ERRORS.STRING.MAX(length), [], error)
+    this.__config.validators.push(v => (v.length > length ? issue : null))
     return this
   }
-
-  public regex(regex: RegExp, message: string = `Value does not match regex: ${regex}`): this {
-    this.validators.push([v => regex.test(v), message, IssueCode.RefinementFailed])
+  public regex(pattern: RegExp, error?: string | ErrorConfig): this {
+    const issue = this.buildIssue(CODES.STRING.REGEX, ERRORS.STRING.REGEX, [], error)
+    this.__config.validators.push(v => (pattern.test(v) ? null : issue))
     return this
   }
-  public email(message: string): this
-  public email(config: EmailConfig): this
-  public email(config: EmailConfig | string = DEFAULT_EMAIL_CONFIG.message) {
-    const options: Required<EmailConfig> = typeof config === 'string' ? { ...DEFAULT_EMAIL_CONFIG, message: config } : { ...DEFAULT_EMAIL_CONFIG, ...config }
-
-    this.validators.push([v => options.regex.test(v), options.message, IssueCode.RefinementFailed])
+  public email(error?: string | ErrorConfig<{ pattern?: RegExp }>): this {
+    const issue = this.buildIssue(CODES.STRING.EMAIL, ERRORS.STRING.EMAIL, [], error)
+    const pattern = typeof error === 'string' ? REGEXES.EMAIL : error?.pattern ?? REGEXES.EMAIL
+    this.__config.validators.push(v => (pattern.test(v) ? null : issue))
+    return this
+  }
+  public url(error?: string | ErrorConfig): this {
+    const issue = this.buildIssue(CODES.STRING.URL, ERRORS.STRING.URL, [], error)
+    this.__config.validators.push(v => {
+      try {
+        new URL(v)
+      } catch (_error) {
+        return issue
+      }
+    })
     return this
   }
 }
