@@ -101,6 +101,7 @@ export class TyrunStringSchema extends TyrunBaseSchema<string, string, TyrunStri
     this.__config.validators.push(v => {
       try {
         new URL(v)
+        return null
       } catch (_error) {
         return issue
       }
