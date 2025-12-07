@@ -1,70 +1,108 @@
-import { IssueCode } from '../constants'
-import { BaseSchema } from '../core/base'
-import type { Issue, Output, ParseResult, Tyrun, TyrunArray } from '../types'
+import { CODES, ERRORS } from '../constants'
+import { TyrunBaseSchema } from '../core/base'
+import { TyrunError } from '../errors'
+import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
+import type { TyrunArrayConfig, TyrunArrayType } from './types'
 
-export class ArraySchema<S extends Tyrun<any>> extends BaseSchema<Output<S>[]> implements TyrunArray<S> {
-  public readonly type = 'array'
-  public readonly inner: S
+export class TyrunArraySchema<T extends TyrunBaseType<any, any>> extends TyrunBaseSchema<Input<T>[], Output<T>[], TyrunArrayConfig> implements TyrunArrayType<T> {
+  readonly type: 'array' = 'array' as const
 
-  constructor(private schema: S, private message: string = 'Value must be an array') {
-    super()
-    this.inner = schema
+  constructor(public readonly schema: T, config: TyrunBaseConfig<TyrunArrayConfig, Input<T>[], Output<T>[]>) {
+    super(config)
   }
 
-  public override parse(value: unknown): ParseResult<Output<S>[]> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = this.runPreprocessors(value)
+  public override parse(input: unknown): Output<T>[] {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return this.runDefault()
 
-    if (!Array.isArray(value)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = this.runPreprocessors(input)
 
-    const errors: Issue[] = []
-    const output: Output<S>[] = []
+      if (!Array.isArray(preprocessed)) throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, ERRORS.BASE.TYPE, [], this.__config.error)])
 
-    let i = 0
-    for (const v of value) {
-      const res = this.schema.parse(v)
-      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [i.toString(), ...e.path] })))
-      else output.push(res.data)
-      i++
+      const output: Output<T>[] = []
+      const issues: Issue[] = []
+
+      for (let index = 0; index < preprocessed.length; index++) {
+        const item = preprocessed[index]
+        const result = this.schema.safeParse(item)
+        if (!result.success) issues.push(...result.issues.map(issue => ({ ...issue, path: [index.toString(), ...issue.path] })))
+        else output.push(result.data)
+      }
+
+      issues.push(...this.runValidators(output))
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = this.runProcessors(output)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return this.runFallback()
+      throw error
     }
-
-    errors.push(...this.runValidators(output))
-    if (errors.length) return { errors }
-
-    const v = this.runTransformers(output)
-    return { data: v }
   }
-  public override async parseAsync(value: unknown): Promise<ParseResult<Output<S>[]>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = await this.runPreprocessorsAsync(value)
+  public override async parseAsync(input: unknown): Promise<Output<T>[]> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return await this.runDefaultAsync()
 
-    if (!Array.isArray(value)) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = await this.runPreprocessorsAsync(input)
 
-    const errors: Issue[] = []
-    const output: Output<S>[] = []
+      if (!Array.isArray(preprocessed)) throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, ERRORS.BASE.TYPE, [], this.__config.error)])
 
-    let i = 0
-    for (const v of value) {
-      const res = await this.schema.parseAsync(v)
-      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [i.toString(), ...e.path] })))
-      else output.push(res.data)
-      i++
+      const output: Output<T>[] = []
+      const issues: Issue[] = []
+
+      for (let index = 0; index < preprocessed.length; index++) {
+        const item = preprocessed[index]
+        const result = await this.schema.safeParseAsync(item)
+        if (!result.success) issues.push(...result.issues.map(issue => ({ ...issue, path: [index.toString(), ...issue.path] })))
+        else output.push(result.data)
+      }
+
+      issues.push(...(await this.runValidatorsAsync(output)))
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = await this.runProcessorsAsync(output)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return await this.runFallbackAsync()
+      throw error
     }
-
-    errors.push(...(await this.runValidatorsAsync(output)))
-    if (errors.length) return { errors }
-
-    const v = await this.runTransformersAsync(output)
-    return { data: v }
+  }
+  public override safeParse(input: unknown): Result<Output<T>[]> {
+    try {
+      const data = this.parse(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+  public override async safeParseAsync(input: unknown): Promise<Result<Output<T>[]>> {
+    try {
+      const data = await this.parseAsync(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
   }
 
-  public min(length: number, message: string = `Value must contain at least ${length} items`): this {
-    this.validators.push([v => v.length >= length, message, IssueCode.Min])
+  public override clone(): TyrunArraySchema<T> {
+    return new TyrunArraySchema(this.schema, this.__config)
+  }
+
+  public nonEmpty(error?: string): this {
+    const issue = this.buildIssue(CODES.ARRAY.NON_EMPTY, ERRORS.ARRAY.NON_EMPTY, [], error)
+    this.__config.validators.push(input => (input.length > 0 ? null : issue))
     return this
   }
-
-  public max(length: number, message: string = `Value must contain at most ${length} items`): this {
-    this.validators.push([v => v.length <= length, message, IssueCode.Max])
+  public min(length: number, error?: string): this {
+    const issue = this.buildIssue(CODES.ARRAY.MIN, ERRORS.ARRAY.MIN(length), [], error)
+    this.__config.validators.push(input => (input.length >= length ? null : issue))
+    return this
+  }
+  public max(length: number, error?: string): this {
+    const issue = this.buildIssue(CODES.ARRAY.MAX, ERRORS.ARRAY.MAX(length), [], error)
+    this.__config.validators.push(input => (input.length <= length ? null : issue))
     return this
   }
 }

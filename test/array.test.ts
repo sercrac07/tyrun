@@ -1,99 +1,147 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, T, t } from '../src'
-import { generateError, generateSuccess } from './utils'
+import type { Expect } from './utils'
 
-const _schema = t.array(t.string()).mutate(v => String(v))
-type _SchemaOutput = T.Output<typeof _schema> // Expected: string
-type _SchemaInput = T.Input<typeof _schema> // Expected: string[]
+import t, { constants, errors, type T } from '../src'
 
-const _complexSchema = t.array(t.string().mutate(v => Number(v)))
-type _ComplexSchemaOutput = T.Output<typeof _complexSchema> // Expected: number[]
-type _ComplexSchemaInput = T.Input<typeof _complexSchema> // Expected: string[]
+const _schema = t.array(t.string())
+const _input: Expect<T.Input<typeof _schema>, string[]> = null as any
+const _output: Expect<T.Output<typeof _schema>, string[]> = null as any
 
-describe('array', () => {
+describe('array schema', () => {
   it('should be defined', () => {
     expect(t.array).toBeDefined()
   })
 
-  const schema = t.string()
-  const data = ['string']
+  it('should parse', async () => {
+    expect(t.array(t.string()).parse(['foo'])).toEqual(['foo'])
+    await expect(t.array(t.string()).parseAsync(['foo'])).resolves.toEqual(['foo'])
 
-  it('should parse', () => {
-    expect(t.array(schema).parse([])).toEqual(generateSuccess([]))
-    expect(t.array(schema).parse(data)).toEqual(generateSuccess(data))
-    expect(t.array(schema).optional().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.array(schema).nullable().parse(null)).toEqual(generateSuccess(null))
-    expect(t.array(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.array(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.array(t.string()).safeParse(['foo'])).toEqual({ success: true, data: ['foo'] })
+    await expect(t.array(t.string()).safeParseAsync(['foo'])).resolves.toEqual({ success: true, data: ['foo'] })
+  })
+
+  it('should parse default value', async () => {
+    expect(t.array(t.string()).default(['foo']).parse(undefined)).toEqual(['foo'])
     expect(
       t
-        .array(schema)
-        .transform(async v => v.map(item => item.toUpperCase()))
-        .parse(data)
-    ).toEqual(generateSuccess(data))
-    expect(t.array(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
-    expect(
-      t
-        .array(schema)
-        .preprocess(() => data)
+        .array(t.string())
+        .default(() => ['foo'])
         .parse(undefined)
-    ).toEqual(generateSuccess(data))
-  })
+    ).toEqual(['foo'])
+    await expect(
+      t
+        .array(t.string())
+        .default(async () => ['foo'] as const)
+        .parseAsync(undefined)
+    ).resolves.toEqual(['foo'])
 
-  it('should not parse', () => {
-    expect(t.array(schema).parse([1])).toEqual(generateError({ message: 'Value must be a string', path: ['0'], code: IssueCode.InvalidType }))
-    expect(t.array(schema).parse('string')).toEqual(generateError({ message: 'Value must be an array', path: [], code: IssueCode.InvalidType }))
-    expect(t.array(schema).parse(1)).toEqual(generateError({ message: 'Value must be an array', path: [], code: IssueCode.InvalidType }))
-    expect(t.array(schema).parse(true)).toEqual(generateError({ message: 'Value must be an array', path: [], code: IssueCode.InvalidType }))
-    expect(t.array(schema).parse({})).toEqual(generateError({ message: 'Value must be an array', path: [], code: IssueCode.InvalidType }))
-  })
-
-  it('should parse async', async () => {
-    expect(
-      await t
-        .array(schema)
-        .transform(async v => v.map(item => item.toUpperCase()))
-        .parseAsync(data)
-    ).toEqual(generateSuccess(data.map(item => item.toUpperCase())))
-  })
-
-  it('should validate', () => {
-    expect(t.array(schema).min(1).parse(data)).toEqual(generateSuccess(data))
-    expect(t.array(schema).max(1).parse(data)).toEqual(generateSuccess(data))
+    expect(t.array(t.string()).fallback(['foo']).parse('foo')).toEqual(['foo'])
     expect(
       t
-        .array(schema)
-        .refine(v => v.length === 1)
-        .parse(data)
-    ).toEqual(generateSuccess(data))
+        .array(t.string())
+        .fallback(() => ['foo'])
+        .parse('foo')
+    ).toEqual(['foo'])
+    await expect(
+      t
+        .array(t.string())
+        .fallback(async () => ['foo'] as const)
+        .parseAsync('foo')
+    ).resolves.toEqual(['foo'])
   })
 
-  it('should not validate', () => {
-    expect(t.array(schema).min(2).parse(data)).toEqual(generateError({ message: 'Value must contain at least 2 items', path: [], code: IssueCode.Min }))
-    expect(t.array(schema).max(0).parse(data)).toEqual(generateError({ message: 'Value must contain at most 0 items', path: [], code: IssueCode.Max }))
-    expect(
-      t
-        .array(schema)
-        .refine(v => v.length === 2)
-        .parse(data)
-    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
+  it('should fail parse', async () => {
+    expect(() => t.array(t.string()).parse('foo')).toThrow(errors.TyrunError)
+    await expect(t.array(t.string()).parseAsync('foo')).rejects.toThrow(errors.TyrunError)
+
+    expect(t.array(t.string()).safeParse('foo')).toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] }] })
+    await expect(t.array(t.string()).safeParseAsync('foo')).resolves.toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] }] })
+
+    expect(() => t.array(t.string()).parse(123)).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse(123n)).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse(true)).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse(Symbol())).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse(undefined)).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse(null)).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse([123])).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse({})).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse(new Date())).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).parse(new File([''], 'bar'))).toThrow(errors.TyrunError)
   })
 
-  it('should transform', () => {
-    expect(
-      t
-        .array(schema)
-        .transform(v => v.map(item => item.toUpperCase()))
-        .parse(data)
-    ).toEqual(generateSuccess(data.map(item => item.toUpperCase())))
+  it('should access inner properties', () => {
+    expect(t.array(t.string()).schema).toEqual(t.string())
   })
 
-  it('should mutate', () => {
+  it('should throw `TyrunRuntimeError`', () => {
+    expect(() =>
+      t
+        .array(t.string())
+        .default(async () => ['foo'])
+        .parse(undefined)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .array(t.string())
+        .validate(async () => 'Invalid value')
+        .parse(['foo'])
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .array(t.string())
+        .process(async () => ['foo'])
+        .parse(['foo'])
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .array(t.string())
+        .preprocess(async () => ['foo'])
+        .parse(['foo'])
+    ).toThrow(errors.TyrunRuntimeError)
+  })
+
+  it('should parse with validators', () => {
+    expect(t.array(t.string()).nonEmpty().parse(['foo'])).toEqual(['foo'])
+    expect(t.array(t.string()).min(1).parse(['foo'])).toEqual(['foo'])
+    expect(t.array(t.string()).max(1).parse(['foo'])).toEqual(['foo'])
+  })
+
+  it('should fail parse with validators', () => {
+    expect(() => t.array(t.string()).nonEmpty().parse([])).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).min(2).parse(['foo'])).toThrow(errors.TyrunError)
+    expect(() => t.array(t.string()).max(0).parse(['foo'])).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom validators', () => {
     expect(
       t
-        .array(schema)
-        .mutate(v => String(v))
-        .parse(data)
-    ).toEqual(generateSuccess(String(data)))
+        .array(t.string())
+        .validate(v => (v.length === 1 ? null : 'Invalid value'))
+        .parse(['foo'])
+    ).toEqual(['foo'])
+  })
+
+  it('should fail parse with custom validators', () => {
+    expect(() =>
+      t
+        .array(t.string())
+        .validate(v => (v.length !== 1 ? null : 'Invalid value'))
+        .parse(['foo'])
+    ).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom processors and preprocessors', () => {
+    expect(
+      t
+        .array(t.string())
+        .process(v => v.map(i => i.toLowerCase()))
+        .parse(['FOO'])
+    ).toEqual(['foo'])
+    expect(
+      t
+        .array(t.string())
+        .preprocess<string[]>(v => v.map(i => i.toLowerCase()))
+        .parse(['FOO'])
+    ).toEqual(['foo'])
   })
 })

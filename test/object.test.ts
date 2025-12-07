@@ -1,95 +1,136 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, T, t } from '../src'
-import { generateError, generateSuccess } from './utils'
+import type { Expect } from './utils'
 
-const _schema = t.object({ name: t.string() }).mutate(v => String(v))
-type _SchemaOutput = T.Output<typeof _schema> // Expected: string
-type _SchemaInput = T.Input<typeof _schema> // Expected: { name: string }
+import t, { constants, errors, type T } from '../src'
 
-const _complexSchema = t.object({ name: t.string().mutate(v => Number(v)) })
-type _ComplexSchemaOutput = T.Output<typeof _complexSchema> // Expected: { name: number }
-type _ComplexSchemaInput = T.Input<typeof _complexSchema> // Expected: { name: string }
+const _schema = t.object({ foo: t.string() })
+const _input: Expect<T.Input<typeof _schema>, { foo: string }> = null as any
+const _output: Expect<T.Output<typeof _schema>, { foo: string }> = null as any
 
-describe('object', () => {
+describe('object schema', () => {
   it('should be defined', () => {
     expect(t.object).toBeDefined()
   })
 
-  const schema = { a: t.string() }
-  const data = { a: 'string' }
+  it('should parse', async () => {
+    expect(t.object({ foo: t.string() }).parse({ foo: 'bar' })).toEqual({ foo: 'bar' })
+    await expect(t.object({ foo: t.string() }).parseAsync({ foo: 'bar' })).resolves.toEqual({ foo: 'bar' })
 
-  it('should parse', () => {
-    expect(t.object({}).parse({})).toEqual(generateSuccess({}))
-    expect(t.object(schema).parse(data)).toEqual(generateSuccess(data))
-    expect(t.object(schema).optional().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.object(schema).nullable().parse(null)).toEqual(generateSuccess(null))
-    expect(t.object(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.object(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.object({ foo: t.string() }).safeParse({ foo: 'bar' })).toEqual({ success: true, data: { foo: 'bar' } })
+    await expect(t.object({ foo: t.string() }).safeParseAsync({ foo: 'bar' })).resolves.toEqual({ success: true, data: { foo: 'bar' } })
+  })
+
+  it('should parse default value', async () => {
+    expect(t.object({ foo: t.string() }).default({ foo: 'bar' }).parse(undefined)).toEqual({ foo: 'bar' })
     expect(
       t
-        .object(schema)
-        .transform(async v => ({ ...v, a: v.a.toUpperCase() }))
-        .parse(data)
-    ).toEqual(generateSuccess(data))
-    expect(t.object(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
-    expect(
-      t
-        .object(schema)
-        .preprocess(() => data)
+        .object({ foo: t.string() })
+        .default(() => ({ foo: 'bar' }))
         .parse(undefined)
-    ).toEqual(generateSuccess(data))
-  })
+    ).toEqual({ foo: 'bar' })
+    await expect(
+      t
+        .object({ foo: t.string() })
+        .default(async () => ({ foo: 'bar' }))
+        .parseAsync(undefined)
+    ).resolves.toEqual({ foo: 'bar' })
 
-  it('should not parse', () => {
-    expect(t.object(schema).parse({})).toEqual(generateError({ message: 'Value must be a string', path: ['a'], code: IssueCode.InvalidType }))
-    expect(t.object(schema).parse('string')).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
-    expect(t.object(schema).parse(1)).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
-    expect(t.object(schema).parse(true)).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
-    expect(t.object(schema).parse([])).toEqual(generateError({ message: 'Value must be an object', path: [], code: IssueCode.InvalidType }))
-  })
-
-  it('should parse async', async () => {
-    expect(
-      await t
-        .object(schema)
-        .transform(async v => ({ ...v, a: v.a.toUpperCase() }))
-        .parseAsync(data)
-    ).toEqual(generateSuccess({ ...data, a: data.a.toUpperCase() }))
-  })
-
-  it('should validate', () => {
+    expect(t.object({ foo: t.string() }).fallback({ foo: 'bar' }).parse('foo')).toEqual({ foo: 'bar' })
     expect(
       t
-        .object(schema)
-        .refine(v => v.a.length === 6)
-        .parse(data)
-    ).toEqual(generateSuccess(data))
+        .object({ foo: t.string() })
+        .fallback(() => ({ foo: 'bar' }))
+        .parse('foo')
+    ).toEqual({ foo: 'bar' })
+    await expect(
+      t
+        .object({ foo: t.string() })
+        .fallback(async () => ({ foo: 'bar' }))
+        .parseAsync('foo')
+    ).resolves.toEqual({ foo: 'bar' })
   })
 
-  it('should not validate', () => {
-    expect(
-      t
-        .object(schema)
-        .refine(v => v.a.length === 5)
-        .parse(data)
-    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
+  it('should fail parse', async () => {
+    expect(() => t.object({ foo: t.string() }).parse('foo')).toThrow(errors.TyrunError)
+    await expect(t.object({ foo: t.string() }).parseAsync('foo')).rejects.toThrow(errors.TyrunError)
+
+    expect(t.object({ foo: t.string() }).safeParse('foo')).toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] }] })
+    await expect(t.object({ foo: t.string() }).safeParseAsync('foo')).resolves.toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.BASE.TYPE, path: [] }] })
+
+    expect(() => t.object({ foo: t.string() }).parse(123)).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse(123n)).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse(true)).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse(Symbol())).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse(undefined)).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse(null)).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse([])).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse({})).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse({ foo: 123 })).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse(new Date())).toThrow(errors.TyrunError)
+    expect(() => t.object({ foo: t.string() }).parse(new File([''], 'bar'))).toThrow(errors.TyrunError)
   })
 
-  it('should transform', () => {
-    expect(
-      t
-        .object(schema)
-        .transform(v => ({ ...v, a: v.a.toUpperCase() }))
-        .parse(data)
-    ).toEqual(generateSuccess({ ...data, a: data.a.toUpperCase() }))
+  it('should access inner properties', () => {
+    expect(t.object({ foo: t.string() }).shape.foo).toEqual(t.string())
   })
 
-  it('should mutate', () => {
+  it('should throw `TyrunRuntimeError`', () => {
+    expect(() =>
+      t
+        .object({ foo: t.string() })
+        .default(async () => ({ foo: 'bar' }))
+        .parse(undefined)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .object({ foo: t.string() })
+        .validate(async () => 'Invalid value')
+        .parse({ foo: 'bar' })
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .object({ foo: t.string() })
+        .process(async () => ({ foo: 'bar' }))
+        .parse({ foo: 'bar' })
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .object({ foo: t.string() })
+        .preprocess(async () => ({ foo: 'bar' }))
+        .parse({ foo: 'bar' })
+    ).toThrow(errors.TyrunRuntimeError)
+  })
+
+  it('should parse with custom validators', () => {
     expect(
       t
-        .object(schema)
-        .mutate(v => String(v))
-        .parse(data)
-    ).toEqual(generateSuccess(String(data)))
+        .object({ foo: t.string() })
+        .validate(v => (v.foo === 'bar' ? null : 'Invalid value'))
+        .parse({ foo: 'bar' })
+    ).toEqual({ foo: 'bar' })
+  })
+
+  it('should fail parse with custom validators', () => {
+    expect(() =>
+      t
+        .object({ foo: t.string() })
+        .validate(v => (v.foo !== 'bar' ? null : 'Invalid value'))
+        .parse({ foo: 'bar' })
+    ).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom processors and preprocessors', () => {
+    expect(
+      t
+        .object({ foo: t.string() })
+        .process(v => ({ foo: v.foo.toLowerCase() }))
+        .parse({ foo: 'FOO' })
+    ).toEqual({ foo: 'foo' })
+    expect(
+      t
+        .object({ foo: t.string() })
+        .preprocess<{ foo: string }>(v => ({ foo: v.foo.toLowerCase() }))
+        .parse({ foo: 'FOO' })
+    ).toEqual({ foo: 'foo' })
   })
 })

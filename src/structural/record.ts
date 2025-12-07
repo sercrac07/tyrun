@@ -1,56 +1,98 @@
-import { IssueCode } from '../constants'
-import { BaseSchema } from '../core/base'
-import type { Issue, Output, ParseResult, Tyrun, TyrunRecord } from '../types'
+import { CODES, ERRORS } from '../constants'
+import { TyrunBaseSchema } from '../core/base'
+import { TyrunError } from '../errors'
+import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
+import type { TyrunRecordConfig, TyrunRecordType } from './types'
 
-export class RecordSchema<S extends Tyrun<any>> extends BaseSchema<{ [key: string]: Output<S> }> implements TyrunRecord<S> {
-  public readonly type = 'record'
-  public readonly inner: S
+export class TyrunRecordSchema<Key extends TyrunBaseType<any, string>, Value extends TyrunBaseType<any, any>> extends TyrunBaseSchema<Record<Input<Key>, Input<Value>>, Record<Output<Key>, Output<Value>>, TyrunRecordConfig> implements TyrunRecordType<Key, Value> {
+  public readonly type: 'record' = 'record' as const
 
-  constructor(private schema: S, private message: string = 'Value must be an object') {
-    super()
-    this.inner = schema
+  constructor(public readonly key: Key, public readonly value: Value, config: TyrunBaseConfig<TyrunRecordConfig, Record<Input<Key>, Input<Value>>, Record<Output<Key>, Output<Value>>>) {
+    super(config)
   }
 
-  public override parse(value: unknown): ParseResult<{ [key: string]: Output<S> }> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = this.runPreprocessors(value)
+  public override parse(input: unknown): Record<Output<Key>, Output<Value>> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return this.runDefault()
 
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = this.runPreprocessors(input)
 
-    const errors: Issue[] = []
-    const output: Record<string, Output<S>> = {}
+      if (typeof preprocessed !== 'object' || preprocessed === null || Array.isArray(preprocessed)) throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, ERRORS.BASE.TYPE, [], this.__config.error)])
 
-    for (const [key, val] of Object.entries(value)) {
-      const res = this.schema.parse(val)
-      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [key, ...e.path] })))
-      else output[key] = res.data
+      const output = {} as Record<Output<Key>, Output<Value>>
+      const issues: Issue[] = []
+
+      for (const [key, value] of Object.entries(preprocessed)) {
+        const keyResult = this.key.safeParse(key)
+        const valueResult = this.value.safeParse(value)
+
+        if (!keyResult.success || !valueResult.success) {
+          if (!keyResult.success) issues.push(...keyResult.issues)
+          if (!valueResult.success) issues.push(...valueResult.issues)
+        } else output[keyResult.data as Output<Key>] = valueResult.data
+      }
+
+      issues.push(...this.runValidators(output))
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = this.runProcessors(output)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return this.runFallback()
+      throw error
     }
-
-    errors.push(...this.runValidators(output))
-    if (errors.length) return { errors }
-
-    const v = this.runTransformers(output)
-    return { data: v }
   }
-  public override async parseAsync(value: unknown): Promise<ParseResult<{ [key: string]: Output<S> }>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = await this.runPreprocessorsAsync(value)
+  public override async parseAsync(input: unknown): Promise<Record<Output<Key>, Output<Value>>> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return await this.runDefaultAsync()
 
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = await this.runPreprocessorsAsync(input)
 
-    const errors: Issue[] = []
-    const output: Record<string, Output<S>> = {}
+      if (typeof preprocessed !== 'object' || preprocessed === null || Array.isArray(preprocessed)) throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, ERRORS.BASE.TYPE, [], this.__config.error)])
 
-    for (const [key, val] of Object.entries(value)) {
-      const res = await this.schema.parseAsync(val)
-      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [key, ...e.path] })))
-      else output[key] = res.data
+      const output = {} as Record<Output<Key>, Output<Value>>
+      const issues: Issue[] = []
+
+      for (const [key, value] of Object.entries(preprocessed)) {
+        const keyResult = await this.key.safeParseAsync(key)
+        const valueResult = await this.value.safeParseAsync(value)
+
+        if (!keyResult.success || !valueResult.success) {
+          if (!keyResult.success) issues.push(...keyResult.issues)
+          if (!valueResult.success) issues.push(...valueResult.issues)
+        } else output[keyResult.data as Output<Key>] = valueResult.data
+      }
+
+      issues.push(...(await this.runValidatorsAsync(output)))
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = await this.runProcessorsAsync(output)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return await this.runFallbackAsync()
+      throw error
     }
+  }
+  public override safeParse(input: unknown): Result<Record<Output<Key>, Output<Value>>> {
+    try {
+      const data = this.parse(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+  public override async safeParseAsync(input: unknown): Promise<Result<Record<Output<Key>, Output<Value>>>> {
+    try {
+      const data = await this.parseAsync(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
 
-    errors.push(...(await this.runValidatorsAsync(output)))
-    if (errors.length) return { errors }
-
-    const v = await this.runTransformersAsync(output)
-    return { data: v }
+  public override clone(): TyrunRecordSchema<Key, Value> {
+    return new TyrunRecordSchema(this.key, this.value, this.__config)
   }
 }

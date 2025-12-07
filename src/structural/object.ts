@@ -1,56 +1,90 @@
-import { IssueCode } from '../constants'
-import { BaseSchema } from '../core/base'
-import type { Issue, ParseResult, TypeFromShape, Tyrun, TyrunObject } from '../types'
+import { CODES, ERRORS } from '../constants'
+import { TyrunBaseSchema } from '../core/base'
+import { TyrunError } from '../errors'
+import type { InputShape, Issue, OutputShape, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
+import type { TyrunObjectConfig } from './types'
 
-export class ObjectSchema<S extends { [key: string]: Tyrun<any> }> extends BaseSchema<TypeFromShape<S>> implements TyrunObject<S> {
-  public readonly type = 'object'
-  public readonly inner: S
+export class TyrunObjectSchema<T extends Record<string, TyrunBaseType<any, any>>> extends TyrunBaseSchema<InputShape<T>, OutputShape<T>, TyrunObjectConfig> {
+  public readonly type: 'object' = 'object' as const
 
-  constructor(private schema: S, private message: string = 'Value must be an object') {
-    super()
-    this.inner = schema
+  constructor(public readonly shape: T, config: TyrunBaseConfig<TyrunObjectConfig, InputShape<T>, OutputShape<T>>) {
+    super(config)
   }
 
-  public override parse(value: unknown): ParseResult<TypeFromShape<S>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = this.runPreprocessors(value)
+  public override parse(input: unknown): OutputShape<T> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return this.runDefault()
 
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = this.runPreprocessors(input)
 
-    const errors: Issue[] = []
-    const output: Record<string, any> = {}
+      if (typeof preprocessed !== 'object' || preprocessed === null || Array.isArray(preprocessed)) throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, ERRORS.BASE.TYPE, [], this.__config.error)])
 
-    for (const [key, schema] of Object.entries(this.schema)) {
-      const res = schema.parse((value as any)[key])
-      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [key, ...e.path] })))
-      else output[key] = res.data
+      const output = {} as OutputShape<T>
+      const issues: Issue[] = []
+
+      for (const [key, value] of Object.entries(this.shape)) {
+        const result = value.safeParse((preprocessed as Record<string, unknown>)[key])
+        if (!result.success) issues.push(...result.issues.map(issue => ({ ...issue, path: [key, ...issue.path] })))
+        else output[key as keyof OutputShape<T>] = result.data
+      }
+
+      issues.push(...this.runValidators(output))
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = this.runProcessors(output)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return this.runFallback()
+      throw error
     }
-
-    errors.push(...this.runValidators(output as TypeFromShape<S>))
-    if (errors.length) return { errors }
-
-    const v = this.runTransformers(output as TypeFromShape<S>)
-    return { data: v }
   }
-  public override async parseAsync(value: unknown): Promise<ParseResult<TypeFromShape<S>>> {
-    if (this.__default !== undefined && value === undefined) value = this.__default
-    value = await this.runPreprocessorsAsync(value)
+  public override async parseAsync(input: unknown): Promise<OutputShape<T>> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return await this.runDefaultAsync()
 
-    if (typeof value !== 'object' || Array.isArray(value) || value === null) return { errors: [{ message: this.message, path: [], code: IssueCode.InvalidType }] }
+      const preprocessed = await this.runPreprocessorsAsync(input)
 
-    const errors: Issue[] = []
-    const output: Record<string, any> = {}
+      if (typeof preprocessed !== 'object' || preprocessed === null || Array.isArray(preprocessed)) throw new TyrunError([this.buildIssue(CODES.BASE.TYPE, ERRORS.BASE.TYPE, [], this.__config.error)])
 
-    for (const [key, schema] of Object.entries(this.schema)) {
-      const res = await schema.parseAsync((value as any)[key])
-      if (res.errors) errors.push(...res.errors.map(e => ({ ...e, path: [key, ...e.path] })))
-      else output[key] = res.data
+      const output = {} as OutputShape<T>
+      const issues: Issue[] = []
+
+      for (const [key, value] of Object.entries(this.shape)) {
+        const result = await value.safeParseAsync((preprocessed as Record<string, unknown>)[key])
+        if (!result.success) issues.push(...result.issues.map(issue => ({ ...issue, path: [key, ...issue.path] })))
+        else output[key as keyof OutputShape<T>] = result.data
+      }
+
+      issues.push(...(await this.runValidatorsAsync(output)))
+      if (issues.length > 0) throw new TyrunError(issues)
+
+      const processed = await this.runProcessorsAsync(output)
+      return processed
+    } catch (error) {
+      if (error instanceof TyrunError && this.__config.fallback !== undefined) return await this.runFallbackAsync()
+      throw error
     }
+  }
+  public override safeParse(input: unknown): Result<OutputShape<T>> {
+    try {
+      const data = this.parse(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+  public override async safeParseAsync(input: unknown): Promise<Result<OutputShape<T>>> {
+    try {
+      const data = await this.parseAsync(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
 
-    errors.push(...(await this.runValidatorsAsync(output as TypeFromShape<S>)))
-    if (errors.length) return { errors }
-
-    const v = await this.runTransformersAsync(output as TypeFromShape<S>)
-    return { data: v }
+  public override clone(): TyrunObjectSchema<T> {
+    return new TyrunObjectSchema(this.shape, this.__config)
   }
 }

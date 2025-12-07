@@ -1,91 +1,136 @@
 import { describe, expect, it } from 'vitest'
-import { IssueCode, T, t } from '../src'
-import { generateError, generateSuccess } from './utils'
+import type { Expect } from './utils'
 
-const _schema = t.enum(['a', 'b', 'c']).mutate(v => String(v))
-type _SchemaOutput = T.Output<typeof _schema> // Expected: string
-type _SchemaInput = T.Input<typeof _schema> // Expected: 'a' | 'b' | 'c'
+import t, { constants, errors, type T } from '../src'
 
-describe('enum', () => {
+const _schema = t.enum(['foo', 'bar'])
+const _input: Expect<T.Input<typeof _schema>, 'foo' | 'bar'> = null as any
+const _output: Expect<T.Output<typeof _schema>, 'foo' | 'bar'> = null as any
+
+describe('enum schema', () => {
   it('should be defined', () => {
     expect(t.enum).toBeDefined()
   })
 
-  const schema: ('a' | 'b' | 'c')[] = ['a', 'b', 'c']
-  const data = 'a'
+  it('should parse', async () => {
+    expect(t.enum(['foo', 'bar']).parse('foo')).toEqual('foo')
+    await expect(t.enum(['foo', 'bar']).parseAsync('bar')).resolves.toEqual('bar')
 
-  it('should parse', () => {
-    expect(t.enum(schema).parse(data)).toEqual(generateSuccess(data))
-    expect(t.enum(schema).optional().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.enum(schema).nullable().parse(null)).toEqual(generateSuccess(null))
-    expect(t.enum(schema).nullish().parse(undefined)).toEqual(generateSuccess(undefined))
-    expect(t.enum(schema).nullish().parse(null)).toEqual(generateSuccess(null))
+    expect(t.enum(['foo', 'bar']).safeParse('foo')).toEqual({ success: true, data: 'foo' })
+    await expect(t.enum(['foo', 'bar']).safeParseAsync('bar')).resolves.toEqual({ success: true, data: 'bar' })
+  })
+
+  it('should parse default value', async () => {
+    expect(t.enum(['foo', 'bar']).default('foo').parse(undefined)).toEqual('foo')
     expect(
       t
-        .enum(schema)
-        .transform(async v => (v === 'a' ? 'b' : 'c'))
-        .parse(data)
-    ).toEqual(generateSuccess(data))
-    expect(t.enum(schema).default(data).parse(undefined)).toEqual(generateSuccess(data))
-    expect(
-      t
-        .enum(schema)
-        .preprocess(() => data)
+        .enum(['foo', 'bar'])
+        .default(() => 'foo')
         .parse(undefined)
-    ).toEqual(generateSuccess(data))
-  })
+    ).toEqual('foo')
+    await expect(
+      t
+        .enum(['foo', 'bar'])
+        .default(async () => 'foo' as const)
+        .parseAsync(undefined)
+    ).resolves.toEqual('foo')
 
-  it('should not parse', () => {
-    expect(t.enum(schema).parse('d')).toEqual(generateError({ message: 'Value must be one from the options: a, b, c', path: [], code: IssueCode.InvalidType }))
-    expect(t.enum(schema).parse('string')).toEqual(generateError({ message: 'Value must be one from the options: a, b, c', path: [], code: IssueCode.InvalidType }))
-    expect(t.enum(schema).parse(1)).toEqual(generateError({ message: 'Value must be one from the options: a, b, c', path: [], code: IssueCode.InvalidType }))
-    expect(t.enum(schema).parse(true)).toEqual(generateError({ message: 'Value must be one from the options: a, b, c', path: [], code: IssueCode.InvalidType }))
-    expect(t.enum(schema).parse({})).toEqual(generateError({ message: 'Value must be one from the options: a, b, c', path: [], code: IssueCode.InvalidType }))
-    expect(t.enum(schema).parse([])).toEqual(generateError({ message: 'Value must be one from the options: a, b, c', path: [], code: IssueCode.InvalidType }))
-  })
-
-  it('should parse async', async () => {
-    expect(
-      await t
-        .enum(schema)
-        .transform(async v => (v === 'a' ? 'b' : 'c'))
-        .parseAsync(data)
-    ).toEqual(generateSuccess('b'))
-  })
-
-  it('should validate', () => {
+    expect(t.enum(['foo', 'bar']).fallback('foo').parse('buzz')).toEqual('foo')
     expect(
       t
-        .enum(schema)
-        .refine(v => v === 'a')
-        .parse(data)
-    ).toEqual(generateSuccess(data))
+        .enum(['foo', 'bar'])
+        .fallback(() => 'foo')
+        .parse('buzz')
+    ).toEqual('foo')
+    await expect(
+      t
+        .enum(['foo', 'bar'])
+        .fallback(async () => 'foo' as const)
+        .parseAsync('buzz')
+    ).resolves.toEqual('foo')
   })
 
-  it('should not validate', () => {
-    expect(
-      t
-        .enum(schema)
-        .refine(v => v === 'b')
-        .parse(data)
-    ).toEqual(generateError({ message: 'Refinement failed', path: [], code: IssueCode.RefinementFailed }))
+  it('should fail parse', async () => {
+    expect(() => t.enum(['foo', 'bar']).parse('buzz')).toThrow(errors.TyrunError)
+    await expect(t.enum(['foo', 'bar']).parseAsync('buzz')).rejects.toThrow(errors.TyrunError)
+
+    expect(t.enum(['foo', 'bar']).safeParse('buzz')).toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.ENUM.TYPE(['foo', 'bar']), path: [] }] })
+    await expect(t.enum(['foo', 'bar']).safeParseAsync('buzz')).resolves.toEqual({ success: false, issues: [{ code: constants.CODES.BASE.TYPE, error: constants.ERRORS.ENUM.TYPE(['foo', 'bar']), path: [] }] })
+
+    expect(() => t.enum(['foo', 'bar']).parse(123)).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse(123n)).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse(true)).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse(Symbol())).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse(undefined)).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse(null)).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse({})).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse([])).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse(new Date())).toThrow(errors.TyrunError)
+    expect(() => t.enum(['foo', 'bar']).parse(new File([''], 'bar'))).toThrow(errors.TyrunError)
   })
 
-  it('should transform', () => {
-    expect(
-      t
-        .enum(schema)
-        .transform(v => (v === 'a' ? 'b' : 'c'))
-        .parse(data)
-    ).toEqual(generateSuccess('b'))
+  it('should access inner properties', () => {
+    expect(t.enum(['foo', 'bar']).values[0]).toEqual('foo')
+    expect(t.enum(['foo', 'bar']).values[1]).toEqual('bar')
   })
 
-  it('should mutate', () => {
+  it('should throw `TyrunRuntimeError`', () => {
+    expect(() =>
+      t
+        .enum(['foo', 'bar'])
+        .default(async () => 'foo' as const)
+        .parse(undefined)
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .enum(['foo', 'bar'])
+        .validate(async () => 'Invalid value')
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .enum(['foo', 'bar'])
+        .process(async () => 'foo' as const)
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+    expect(() =>
+      t
+        .enum(['foo', 'bar'])
+        .preprocess(async () => 'foo' as const)
+        .parse('foo')
+    ).toThrow(errors.TyrunRuntimeError)
+  })
+
+  it('should parse with custom validators', () => {
     expect(
       t
-        .enum(schema)
-        .mutate(v => v.toUpperCase())
-        .parse(data)
-    ).toEqual(generateSuccess(data.toUpperCase()))
+        .enum(['foo', 'bar'])
+        .validate(v => (v === 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toEqual('foo')
+  })
+
+  it('should fail parse with custom validators', () => {
+    expect(() =>
+      t
+        .enum(['foo', 'bar'])
+        .validate(v => (v !== 'foo' ? null : 'Invalid value'))
+        .parse('foo')
+    ).toThrow(errors.TyrunError)
+  })
+
+  it('should parse with custom processors and preprocessors', () => {
+    expect(
+      t
+        .enum(['foo', 'bar'])
+        .process(v => (v === 'foo' ? 'bar' : 'foo'))
+        .parse('bar')
+    ).toEqual('foo')
+    expect(
+      t
+        .enum(['foo', 'bar'])
+        .preprocess<'foo' | 'bar'>(v => (v === 'foo' ? 'bar' : 'foo'))
+        .parse('bar')
+    ).toEqual('foo')
   })
 })
