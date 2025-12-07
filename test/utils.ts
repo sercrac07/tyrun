@@ -1,9 +1,1 @@
-import { T } from '../src'
-
-export function generateSuccess<G>(value: G): T.ParseResult<G> {
-  return { data: value }
-}
-
-export function generateError(...errors: T.Issue[]): T.ParseResult<never> {
-  return { errors }
-}
+export type Expect<T, U> = (<K>() => K extends T ? 1 : 2) extends <K>() => K extends U ? 1 : 2 ? T : never
