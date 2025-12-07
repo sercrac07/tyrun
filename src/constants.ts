@@ -34,6 +34,10 @@ export const ERRORS = {
   LITERAL: {
     TYPE: (value: TyrunLiteralParts) => `Literal must be ${value}`,
   },
+  DATE: {
+    MIN: (value: Date) => `Date must be after ${value.toDateString()}`,
+    MAX: (value: Date) => `Date must be before ${value.toDateString()}`,
+  },
   ENUM: {
     TYPE: (values: TyrunEnumParts[]) => `Enum must be one of ${values.join(', ')}`,
   },
@@ -74,6 +78,10 @@ export const CODES = {
     INTEGER: 'bigint.integer',
     POSITIVE: 'bigint.positive',
     NEGATIVE: 'bigint.negative',
+  },
+  DATE: {
+    MIN: 'date.min',
+    MAX: 'date.max',
   },
   ARRAY: {
     NON_EMPTY: 'array.non_empty',
