@@ -1,109 +1,129 @@
-import { IssueCode } from '../constants'
-import type { Issue, IssueCode as IssueCodeType, MaybePromise, ParseResult, TyrunBase, TyrunMeta, TyrunMutation, TyrunNullable, TyrunNullish, TyrunOptional } from '../types'
-import { MutationSchema } from '../utilities/mutation'
-import { NullableSchema } from '../utilities/nullable'
-import { NullishSchema } from '../utilities/nullish'
-import { OptionalSchema } from '../utilities/optional'
+import { CODES, ERRORS } from '../constants'
+import { TyrunRuntimeError } from '../errors'
+import type { Default, Issue, MaybePromise, Preprocessor, Processor, Result, Validator } from '../types'
+import type { TyrunBaseConfig, TyrunBaseType } from './types'
 
-export abstract class BaseSchema<T> implements TyrunBase<T> {
-  public __default: T | undefined = undefined
-  public meta: TyrunMeta = { name: null, description: null }
-  protected validators: [(value: T) => MaybePromise<boolean>, string, IssueCodeType | undefined][] = []
-  protected transformers: ((value: T) => MaybePromise<T>)[] = []
-  protected preprocessors: ((value: unknown) => MaybePromise<unknown>)[] = []
+export abstract class TyrunBaseSchema<I, O, C extends Record<string, any>> implements TyrunBaseType<I, O> {
+  public abstract readonly type: string
 
-  protected runValidators(value: T): Issue[] {
-    const errors: Issue[] = []
-    for (const [val, mes, code] of this.validators) {
-      const res = val(value)
-      if (res instanceof Promise) continue
-      if (!res) errors.push({ message: mes, path: [], code: code ?? IssueCode.RefinementFailed })
-    }
-    return errors
-  }
-  protected async runValidatorsAsync(value: T): Promise<Issue[]> {
-    const errors: Issue[] = []
-    for (const [val, mes, code] of this.validators) {
-      const res = await val(value)
-      if (!res) errors.push({ message: mes, path: [], code: code ?? IssueCode.RefinementFailed })
-    }
-    return errors
-  }
-  protected runTransformers(value: T): T {
-    let v = value
-    for (const transformer of this.transformers) {
-      const res = transformer(v)
-      if (res instanceof Promise) continue
-      v = res
-    }
-    return v
-  }
-  protected async runTransformersAsync(value: T): Promise<T> {
-    let v = value
-    for (const transformer of this.transformers) {
-      v = await transformer(v)
-    }
-    return v
-  }
-  protected runPreprocessors(value: unknown): unknown {
-    let v = value
-    for (const preprocessor of this.preprocessors) {
-      const res = preprocessor(v)
-      if (res instanceof Promise) continue
-      v = res
-    }
-    return v
-  }
-  protected async runPreprocessorsAsync(value: unknown): Promise<unknown> {
-    let v = value
-    for (const preprocessor of this.preprocessors) {
-      v = await preprocessor(v)
-    }
-    return v
+  protected __config: TyrunBaseConfig<C, I, O>
+
+  constructor(config: TyrunBaseConfig<C, I, O>) {
+    this.__config = { ...config, validators: [...config.validators], processors: [...config.processors], preprocessors: [...config.preprocessors] }
   }
 
-  constructor() {}
+  public abstract parse(input: unknown): O
+  public abstract parseAsync(input: unknown): Promise<O>
+  public abstract safeParse(input: unknown): Result<O>
+  public abstract safeParseAsync(input: unknown): Promise<Result<O>>
 
-  public abstract parse(value: unknown): ParseResult<T>
-  public abstract parseAsync(value: unknown): Promise<ParseResult<T>>
-
-  public refine(predicate: (value: T) => MaybePromise<boolean>, message: string = 'Refinement failed'): this {
-    this.validators.push([predicate, message, undefined])
+  public validate(validator: Validator<O>): this {
+    this.__config.validators.push(validator)
     return this
   }
-  public transform(transformer: (value: T) => MaybePromise<T>): this {
-    this.transformers.push(transformer)
+  public process(processor: Processor<O>): this {
+    this.__config.processors.push(processor)
     return this
   }
-  public preprocess(preprocessor: (value: unknown) => MaybePromise<unknown>): this {
-    this.preprocessors.push(preprocessor)
+  public preprocess<T = unknown>(preprocessor: Preprocessor<T, I>): this {
+    this.__config.preprocessors.push(preprocessor)
+    return this
+  }
+  public default(value: Default<O>): this {
+    this.__config.default = value
+    return this
+  }
+  public fallback(value: Default<O>): this {
+    this.__config.fallback = value
     return this
   }
 
-  public optional(): TyrunOptional<this> {
-    return new OptionalSchema(this)
+  protected runValidators(input: O): Issue[] {
+    const issues: Issue[] = []
+    for (const validator of this.__config.validators) {
+      const result = validator(input)
+      if (result instanceof Promise) throw new TyrunRuntimeError('Async validator must be parsed with an async parser')
+      if (result) issues.push(this.buildIssue(CODES.BASE.VALIDATOR_ERROR, ERRORS.BASE.VALIDATOR_ERROR, [], result))
+    }
+    return issues
   }
-  public nullable(): TyrunNullable<this> {
-    return new NullableSchema(this)
+  protected async runValidatorsAsync(input: O): Promise<Issue[]> {
+    const issues: Issue[] = []
+    for (const validator of this.__config.validators) {
+      const result = await validator(input)
+      if (result) issues.push(this.buildIssue(CODES.BASE.VALIDATOR_ERROR, ERRORS.BASE.VALIDATOR_ERROR, [], result))
+    }
+    return issues
   }
-  public nullish(): TyrunNullish<this> {
-    return new NullishSchema(this)
+  protected runProcessors(input: O): O {
+    let processed = input
+    for (const processor of this.__config.processors) {
+      const value = processor(processed)
+      if (value instanceof Promise) throw new TyrunRuntimeError('Async processor must be parsed with an async parser')
+      processed = value
+    }
+    return processed
   }
-  public mutate<O>(mutation: (value: T) => MaybePromise<O>): TyrunMutation<this, O> {
-    return new MutationSchema(this, mutation)
+  protected async runProcessorsAsync(input: O): Promise<O> {
+    let processed = input
+    for (const processor of this.__config.processors) {
+      const value = await processor(processed)
+      processed = value
+    }
+    return processed
+  }
+  protected runPreprocessors(input: unknown): unknown {
+    let preprocessed = input
+    for (const preprocessor of this.__config.preprocessors) {
+      const value = preprocessor(preprocessed)
+      if (value instanceof Promise) throw new TyrunRuntimeError('Async preprocessor must be parsed with an async parser')
+      preprocessed = value
+    }
+    return preprocessed
+  }
+  protected async runPreprocessorsAsync(input: unknown): Promise<unknown> {
+    let preprocessed = input
+    for (const preprocessor of this.__config.preprocessors) {
+      const value = await preprocessor(preprocessed)
+      preprocessed = value
+    }
+    return preprocessed
+  }
+  protected runDefault(): O {
+    if (typeof this.__config.default! === 'function') {
+      const value = (this.__config.default as () => MaybePromise<O>)()
+      if (value instanceof Promise) throw new TyrunRuntimeError('Async default value must be parsed with an async parser')
+      return value
+    }
+    return this.__config.default!
+  }
+  protected async runDefaultAsync(): Promise<O> {
+    if (typeof this.__config.default! === 'function') {
+      const value = await (this.__config.default as () => MaybePromise<O>)()
+      return value
+    }
+    return this.__config.default!
+  }
+  protected runFallback(): O {
+    if (typeof this.__config.fallback! === 'function') {
+      const value = (this.__config.fallback as () => MaybePromise<O>)()
+      if (value instanceof Promise) throw new TyrunRuntimeError('Async fallback value must be parsed with an async parser')
+      return value
+    }
+    return this.__config.fallback!
+  }
+  protected async runFallbackAsync(): Promise<O> {
+    if (typeof this.__config.fallback! === 'function') {
+      const value = await (this.__config.fallback as () => MaybePromise<O>)()
+      return value
+    }
+    return this.__config.fallback!
   }
 
-  public default(value: T): this {
-    this.__default = value
-    return this
-  }
+  public abstract clone(): TyrunBaseSchema<I, O, C>
 
-  public name(name: string) {
-    this.meta.name = name
-    return this
-  }
-  public description(description: string) {
-    this.meta.description = description
-    return this
+  protected buildIssue(code: string, error: string, path: string[], value?: string | Partial<Issue>): Issue {
+    if (typeof value === 'string') return { code, error: value, path }
+    return { code, error, path, ...(value ?? {}) }
   }
 }
