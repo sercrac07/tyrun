@@ -1,206 +1,325 @@
-# Tyrun
+# Tyrun - Typed Runtime
 
 `tyrun` is a lightweight runtime type validator for JavaScript and TypeScript. Define extensible schemas, add custom validation rules, and optionally transform inputs during validation. Designed for minimal overhead and easy integration into node and browser projects.
 
-## Instalation
-
-```bash
-npm install tyrun
-# or
-pnpm add tyrun
-# or
-yarn add tyrun
-# or
-bun add tyrun
-```
-
 ## Features
 
-- **Runtime type safety**
-- **Ease and intuitive API**
-- **Lightweight**
-- **Fully TypeScript typed**
+- **Extensible Schemas**: Define custom validation schemas for your data.
+- **Custom Validation Rules**: Add your own validation logic to schemas.
+- **Ease and Intuitive API**: Simple and straightforward to use.
+- **Lightweight**: Minimal overhead, optimized for performance.
+- **Fully TypeScript Typed**: Enjoy type safety with TypeScript.
 
 ## Usage
 
 Import the main object `t` and start creating your schemas.
 
 ```ts
-import { t } from 'tyrun'
+import t from 'tyrun'
 
-// Define your schema
-const usernameSchema = t
-  .string()
-  .min(3)
-  .max(20)
-  .regex(/^[^\s]+$/)
+// Parse throws an error if something is not valid
+const value = t.string().nonEmpty().parse('hello')
 
-// Check your data
-const usernameSafe = usernameSchema.parse('hello-world')
+// Safe parse returns a result object with value or error
+const result = t.number().min(0).safeParse(42)
 
-if (usernameSafe.errors) {
-  console.error(usernameSafe.errors)
+if (result.success) {
+  console.log(result.value)
 } else {
-  console.log(usernameSafe.data)
+  console.error(result.issues)
 }
 ```
 
-### String validator
+## Primitives
 
-Validates that the input is a string.
+### `t.string(error?)`
+
+Validators: `nonEmpty()`, `min(length)`, `max(length)`, `regex(pattern)`, `email()`, `url()`
 
 ```ts
 t.string()
-t.string().min(10)
-t.string().max(100)
-t.string().regex(/^[a-zA-Z0-9]+$/)
+t.string().nonEmpty()
+t.string().min(3)
+t.string().max(3)
+t.string().regex(/^[a-z]+$/i)
 t.string().email()
-
-// Coerce input to be an string
-t.string().coerce()
+t.string().url()
 ```
 
-### Number validator
+### `t.number(error?)`
 
-Validates that the input is a number.
+Validators: `min(value)`, `max(value)`, `integer()`, `positive()`, `negative()`
 
 ```ts
 t.number()
-t.number().min(10)
+t.number().min(0)
 t.number().max(100)
-
-// Coerce input to be a number
-t.number().coerce()
+t.number().integer()
+t.number().positive()
+t.number().negative()
 ```
 
-### Boolean validator
+### `t.bigint(error?)`
 
-Validates that the input is a boolean.
+Validators: `min(value)`, `max(value)`, `positive()`, `negative()`
+
+```ts
+t.bigint()
+t.bigint().min(0n)
+t.bigint().max(100n)
+t.bigint().positive()
+t.bigint().negative()
+```
+
+### `t.boolean(error?)`
 
 ```ts
 t.boolean()
-
-// Coerce input to be a boolean
-t.boolean().coerce()
 ```
 
-### Date validator
-
-Validates that the input is a date.
+### `t.symbol(error?)`
 
 ```ts
-t.date()
-t.date().min(new Date('2025-09-05'))
-t.date().max(new Date('2025-09-05'))
-
-// Coerce input to be a date
-t.date().coerce()
+t.symbol()
 ```
 
-### Literal validator
-
-Validates that the input is a literal value.
+### `t.undefined(error?)`
 
 ```ts
-t.literal('Hello World!')
+t.undefined()
 ```
 
-### Object validator
+### `t.null(error?)`
 
-Validates that the input is an object with the specified shape.
+```ts
+t.null()
+```
+
+### `t.literal(value, error?)`
+
+```ts
+t.literal('ACTIVE')
+t.literal(10)
+t.literal(true)
+t.literal(99n)
+
+t.literal('ACTIVE').value // 'ACTIVE'
+```
+
+## Structural Schemas
+
+### `t.array(schema, error?)`
+
+Validators: `nonEmpty()`, `min(length)`, `max(length)`
+
+```ts
+t.array(t.string())
+t.array(t.string()).nonEmpty()
+t.array(t.string()).min(3)
+t.array(t.string()).max(3)
+
+t.array(t.string()).schema // t.string()
+```
+
+### `t.object(shape, error?)`
 
 ```ts
 t.object({ name: t.string() })
 
-// Access inner schema
-t.object({ name: t.string() }).inner.name
+t.object({ name: t.string() }).shape.name // t.string()
 ```
 
-### Array validator
-
-Validates that the input is an array of the defined schema.
-
-```ts
-t.array(t.string())
-t.array(t.string()).min(10)
-t.array(t.string()).max(10)
-
-// Access inner schema
-t.array(t.string()).inner
-```
-
-### Enum validator
-
-Validates that the input is one of the defined enum values.
-
-```ts
-t.enum(['a', 'b', 'c'])
-
-// Access enum values
-t.enum(['a', 'b', 'c']).values
-```
-
-### Record validator
-
-Validates that the input is an object of the defined schema.
-
-```ts
-t.record(t.number())
-
-// Access inner schema
-t.record(t.number()).inner
-```
-
-### Tuple validator
-
-Validates that the input is a tuple of the defined schemas.
+### `t.tuple([...schemas], error?)`
 
 ```ts
 t.tuple([t.string(), t.number()])
 
-// Access inner schemas
-t.tuple([t.string(), t.number()]).inner
+t.tuple([t.string(), t.number()]).schema[0] // t.string()
+t.tuple([t.string(), t.number()]).schema[1] // t.number()
 ```
 
-### Union validator
-
-Validates that the input is one of the defined union schemas.
+### `t.record(keySchema, valueSchema, error?)`
 
 ```ts
-t.union([t.string(), t.number()])
+t.record(t.string(), t.number())
+
+t.record(t.string(), t.number()).key // t.string()
+t.record(t.string(), t.number()).value // t.number()
 ```
 
-### Intersection validator
-
-Validates that the input is an intersection of the defined schemas.
+### `t.enum([...values], error?)`
 
 ```ts
-t.intersection([t.object({ name: t.string() }), t.object({ age: t.number() })])
+t.enum(['ACTIVE', 'INACTIVE'])
+
+t.enum(['ACTIVE', 'INACTIVE']).values[0] // 'ACTIVE'
+t.enum(['ACTIVE', 'INACTIVE']).values[1] // 'INACTIVE'
 ```
 
-### Any validator
+## Special Schemas
 
-Validates that the input is any value.
+### `t.any()`
+
+It accepts any value.
 
 ```ts
 t.any()
 ```
 
-### Lazy validator
+### `t.booleanish(errorOrConfig?)`
 
-Validates that the input is a lazy schema.
+Converts string values to boolean depending on `trueValues` and `falseValues` list.
+
+```ts
+t.booleanish()
+t.booleanish({ trueValues: ['1', 'true'], falseValues: ['0', 'false'] })
+
+t.booleanish().trueValues // ['y', 'yes', 'true', '1', 'on']
+t.booleanish().falseValues // ['n', 'no', 'false', '0', 'off']
+```
+
+### `t.union([...schemas])`
+
+```ts
+t.union([t.string(), t.number()])
+
+t.union([t.string(), t.number()]).schema[0] // t.string()
+t.union([t.string(), t.number()]).schema[1] // t.number()
+```
+
+### `t.intersection([...schemas])`
+
+```ts
+t.intersection([t.string(), t.number()])
+
+t.intersection([t.string(), t.number()]).schema[0] // t.string()
+t.intersection([t.string(), t.number()]).schema[1] // t.number()
+```
+
+### `t.lazy(() => schema)`
+
+Useful for recursive schemas.
 
 ```ts
 t.lazy(() => t.string())
+
+const recursiveSchema = t.lazy(() => t.array(recursiveSchema))
+
+t.lazy(() => t.string()).schema // () => t.string()
 ```
 
-### File validator
-
-Validates that the input is a file.
+### `t.mutate(from, to, mutator)`
 
 ```ts
-t.file()
-t.file().min(10)
-t.file().max(100)
-t.file().types(['image/png', 'image/jpeg'])
+t.mutate(t.string(), t.number(), value => value.length)
+
+t.mutate(t.string(), t.number(), value => value.length).from // t.string()
+t.mutate(t.string(), t.number(), value => value.length).to // t.number()
+t.mutate(t.string(), t.number(), value => value.length).mutator // (value: string) => number
+```
+
+### Utility Wrappers
+
+### `t.optional(schema)`
+
+```ts
+t.optional(t.string())
+
+t.optional(t.string()).schema // t.string()
+```
+
+### `t.nullable(schema)`
+
+```ts
+t.nullable(t.string())
+
+t.nullable(t.string()).schema // t.string()
+```
+
+### `t.nullish(schema)`
+
+```ts
+t.nullish(t.string())
+
+t.nullish(t.string()).schema // t.string()
+```
+
+## Pipelines: `preprocess`, `validate`, `process`
+
+All schemas support the following pipelines: `preprocess`, `validate`, `process`.
+
+- `preprocess` - transforms the value before validation
+- `validate` - validates the value
+- `process` - transforms the value after validation
+
+```ts
+const schema = t
+  .string()
+  .preprocess(v => String(v))
+  .preprocess<string>(v => v.trim())
+  .validate(v => (v.length > 0 ? undefined : 'Empty string'))
+  .process(v => v.toUpperCase())
+
+schema.parse(' hello ') // 'HELLO'
+```
+
+## Defaults and Fallbacks
+
+- `.default(valueOrFactory)` - sets the default value if the value is undefined
+- `.fallback(valueOrFactory)` - sets the fallback value if the schema validation fails
+
+```ts
+t.string().default('N/A').parse(undefined) // 'N/A'
+
+t.number().min(0).fallback(0).parse(-1) // 0
+```
+
+## Sync vs Async
+
+- `parse`/`safeParse` - sync pipelines
+- `asyncParse`/`asyncSafeParse` - async pipelines
+
+```ts
+t.string()
+  .validate(async v => ((await isTaken(v)) ? 'Username is taken' : undefined))
+  .parse('foo') // throws TyrunRuntimeError
+await t
+  .string()
+  .validate(async v => ((await isTaken(v)) ? 'Username is taken' : undefined))
+  .parseAsync('foo')
+```
+
+## Error Handling
+
+Structured errors use `TyrunError` and `Issue[]`. Codes and messages are defined in `constants.CODES` and `constants.ERRORS`.
+
+```ts
+try {
+  t.number().min(10).parse(3)
+} catch (e) {
+  if (e instanceof errors.TyrunError) {
+    console.log(e.issues) // [{ code, error, path }]
+  }
+}
+```
+
+## Type Utilities
+
+Available on `T`:
+
+- `T.Input<Schema>` and `T.Output<Schema>`
+- `T.InputShape<Shape>` and `T.OutputShape<Shape>`
+- `T.InputIntersection<[...]>` and `T.OutputIntersection<[...]>`
+
+```ts
+import t, { type T } from 'tyrun'
+
+const User = t.object({
+  id: t.number().integer(),
+  name: t.string().nonEmpty(),
+  email: t.string().email(),
+})
+
+type UserIn = T.Input<typeof User> // { id: number, name: string, email: string }
+type UserOut = T.Output<typeof User> // { id: number, name: string, email: string } -> No mutations
 ```
