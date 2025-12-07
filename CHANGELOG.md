@@ -4,124 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 3.0.2 - 2025-09-11
-
-### Fixed
-
-- `Input` type inference for all schemas
-
-## 3.0.1 - 2025-09-11
-
-### Changed
-
-- `number` validator now throws `InvalidType` error when input is `NaN`
-
-## 3.0.0 - 2025-09-11
+## 1.0.0 -
 
 ### Added
 
-- `parseAsync` method for all validators
-- `default` method for all validators
-- `literal` validator
-- `tuple` validator
-- `intersection` validator
-- `any` validator
-- `lazy` validator
-- `preprocess` method for all validators
-- `email` method for `string` validator
-
-### Changed
-
-- Error message on `date.min`
-- `ParseResult` now has `data` and `errors` properties. When there is an error, `data` is empty and if there is not, `errors` is empty
-- `ParseResult.errors` now is an array of `Issue`
-
-### Fixed
-
-- `T.Output` type for mutation schemas
-
-## 2.2.0 - 2025-09-05
-
-### Added
-
-- `file` validator
-
-## 2.1.0 - 2025-09-05
-
-### Added
-
-- `mutation` method on `optional`, `nullable` and `nullish` schemas
-- `inner` property for `optional`, `nullable` and `nullish` schemas
-- `date` validator
-
-### Fixed
-
-- `boolean` validator not running validators
-
-## 2.0.0 - 2025-09-04
-
-### Added
-
-- `type` property for all validators to store validator type
-- `coerce` method for `string`, `number` and `boolean` validators
-- `refine` method for all validators to add custom validation logic
-- `transform` method for all validators to add custom transformation logic
-- `mutate` method for all validators to add custom mutation logic
-- `T.Input` type to get input type for validator
-
-### Changed
-
-- Refactor classes to explicitily mark public methods
-- Refactor `optional`, `nullable`, `nullish` schemas to inherit from base schema
-- Rename `T.Infer` to `T.Output`
-
-## 1.5.0 - 2025-09-01
-
-### Added
-
-- `meta` property for all validators to store custom metadata
-
-### Changed
-
-- Export all types as `T`
-
-## 1.4.0 - 2025-08-31
-
-### Added
-
-- `inner` property for _object_, _array_ and _record_ validators to access inner schemas configurations
-- `values` property for _enum_ validator to access enum configuration
-
-## 1.3.0 - 2025-08-31
-
-### Added
-
-- _Union_ validation support
-
-## 1.2.0 - 2025-08-31
-
-### Added
-
-- _Records_ validation support
-
-## 1.1.0 - 2025-08-30
-
-### Added
-
-- _Enums_ validation support
-
-## 1.0.0 - 2025-08-29
-
-### Added
-
-- First stable version
-- Runtime type validation
-- Validation support for _strings_, _numbers_, _booleans_, _objects_ and _arrays_
-- String validation methods: _min_, _max_, _regex_
-- Number validation methods: _min_, _max_
-- Array validation methods: _min_, _max_
-- Optional types support
-- Null types support
-- Nullish types support
-- TypeScript interfaces
-- Custom error messages
+- Initial release
+- Runtime schema factories:
+  - Primitives: `string` (`nonEmpty`, `min`, `max`, `regex`, `email`, `url`), `number` (`min`, `max`, `integer`, `positive`, `negative`), `bigint` (`min`, `max`, `positive`, `negative`), `boolean`, `symbol`, `undefined`, `null`, `literal`
+  - Structural: `array` (`nonEmpty`, `min`, `max`), `object`, `enum`, `record`, `tuple`
+  - Special: `any`, `booleanish` (configurable `trueValues`/`falseValues`), `union`, `intersection`, `lazy`, `mutate`
+  - Utility: `optional`, `nullable`, `nullish`
+- Core parsing APIs: `parse`, `parseAsync`, `safeParse`, `safeParseAsync`
+- Pipeline features: `preprocess`, `validate`, `process`, `default`, `fallback`, `clone`
+- Error model: `TyrunError` with `Issue[]`, `TyrunRuntimeError`; constants `ERRORS` and `CODES`
+- Type utilities: `Input`, `Output`, `InputShape`, `OutputShape`, `InputIntersection`, `OutputIntersection`, `Default`, `Validator`, `Processor`, `Preprocessor`, `Mutator`, `MaybePromise`, `Prettify`
+- Test suite with `vitest` covering primitives, structural and special schemas
+- Package exports: default `t` (schemas), `constants`, `errors`, `T` (types)
+- Documentation: README with Quick Start and examples
