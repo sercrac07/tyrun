@@ -1,6 +1,6 @@
 {
   "name": "tyrun",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Lightweight runtime type validator with extensible schemas and transforms",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
