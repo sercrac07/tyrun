@@ -344,3 +344,116 @@ const User = t.object({
 type UserIn = T.Input<typeof User> // { id: number, name: string, email: string }
 type UserOut = T.Output<typeof User> // { id: number, name: string, email: string } -> No mutations
 ```
+
+## Custom Schemas
+
+You can create custom schemas by extending the base schema class.
+
+```ts
+import { type T, TyrunBaseSchema } from 'tyrun'
+
+type UUID = `${string}-${string}-${string}-${string}-${string}`
+
+// Default configuration for the UUID schema
+type UUIDConfig = {
+  error: string
+  allowNumbers: boolean
+}
+// Custom type for the UUID schema
+interface UUIDType extends T.TyrunBaseType<string, UUID> {
+  // Override the type to 'uuid'
+  readonly type: 'uuid'
+}
+
+class UUIDSchema extends TyrunBaseSchema<string, UUID, UUIDConfig> implements UUIDType {
+  // Override the type to 'uuid'
+  public override readonly type: 'uuid' = 'uuid' as const
+
+  // Override the constructor to accept the custom configuration
+  constructor(config: T.TyrunBaseConfig<UUIDConfig, string, UUID>) {
+    super(config)
+  }
+
+  // Override the parse method to validate the UUID format
+  public override parse(input: unknown): UUID {
+    // Wrap the parse method in a try-catch block to handle fallback value
+    try {
+      // Check if the input is undefined and a default value is provided
+      if (input === undefined && this.__config.default !== undefined) return this.runDefault()
+
+      // Run preprocessors
+      const preprocessed = this.runPreprocessors(input)
+
+      // Main validation logic
+      if (typeof preprocessed !== 'string') throw new errors.TyrunError([this.buildIssue(constants.CODES.BASE.TYPE, constants.ERRORS.BASE.TYPE, [], this.__config.error)])
+      if (!this.__config.allowNumbers && /\d/.test(preprocessed)) throw new errors.TyrunError([this.buildIssue(constants.CODES.BASE.TYPE, constants.ERRORS.BASE.TYPE, [], this.__config.error)])
+      if (!/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(preprocessed)) throw new errors.TyrunError([this.buildIssue(constants.CODES.BASE.TYPE, constants.ERRORS.BASE.TYPE, [], this.__config.error)])
+
+      // Run validators
+      const issues = this.runValidators(preprocessed as UUID)
+      if (issues.length > 0) throw new errors.TyrunError(issues)
+
+      // Run processors
+      const processed = this.runProcessors(preprocessed as UUID)
+      return processed
+    } catch (error) {
+      // Handle fallback value if the schema validation fails
+      if (error instanceof errors.TyrunError && this.__config.fallback !== undefined) return this.runFallback()
+      throw error
+    }
+  }
+  // Override the async parse method to validate the UUID format
+  public override async parseAsync(input: unknown): Promise<UUID> {
+    try {
+      if (input === undefined && this.__config.default !== undefined) return await this.runDefaultAsync() // Async default value
+
+      const preprocessed = await this.runPreprocessorsAsync(input) // Async preprocessors
+
+      if (typeof preprocessed !== 'string') throw new errors.TyrunError([this.buildIssue(constants.CODES.BASE.TYPE, constants.ERRORS.BASE.TYPE, [], this.__config.error)])
+      if (!this.__config.allowNumbers && /\d/.test(preprocessed)) throw new errors.TyrunError([this.buildIssue(constants.CODES.BASE.TYPE, constants.ERRORS.BASE.TYPE, [], this.__config.error)])
+      if (!/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(preprocessed)) throw new errors.TyrunError([this.buildIssue(constants.CODES.BASE.TYPE, constants.ERRORS.BASE.TYPE, [], this.__config.error)])
+
+      const issues = await this.runValidatorsAsync(preprocessed as UUID) // Async validators
+      if (issues.length > 0) throw new errors.TyrunError(issues)
+
+      const processed = await this.runProcessorsAsync(preprocessed as UUID) // Async procesors
+      return processed
+    } catch (error) {
+      if (error instanceof errors.TyrunError && this.__config.fallback !== undefined) return await this.runFallbackAsync() // Async fallback value
+      throw error
+    }
+  }
+  // Wrap the parse method in a try-catch block
+  public override safeParse(input: unknown): T.Result<UUID> {
+    try {
+      const data = this.parse(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof errors.TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+  // Wrap the async parse method in a try-catch block
+  public override async safeParseAsync(input: unknown): Promise<T.Result<UUID>> {
+    try {
+      const data = await this.parseAsync(input)
+      return { success: true, data }
+    } catch (error) {
+      if (error instanceof errors.TyrunError) return { success: false, issues: error.issues }
+      throw error
+    }
+  }
+
+  // Clone the schema with the same configuration
+  public override clone(): UUIDSchema {
+    return new UUIDSchema(this.__config)
+  }
+
+  // Any other custom methods can be added here
+}
+
+function uuidSchema(error: string | Partial<UUIDConfig> = constants.ERRORS.BASE.TYPE): UUIDSchema {
+  const config: UUIDConfig = { error: constants.ERRORS.BASE.TYPE, allowNumbers: true, ...(typeof error === 'string' ? { error } : error) }
+  return new UUIDSchema({ ...config, default: undefined, fallback: undefined, validators: [], processors: [], preprocessors: [] })
+}
+```
