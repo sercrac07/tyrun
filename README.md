@@ -15,7 +15,7 @@
 Import the main object `t` and start creating your schemas.
 
 ```ts
-import t from 'tyrun'
+import { t } from 'tyrun'
 
 // Parse throws an error if something is not valid
 const value = t.string().nonEmpty().parse('hello')
@@ -333,7 +333,7 @@ Available on `T`:
 - `T.InputIntersection<[...]>` and `T.OutputIntersection<[...]>`
 
 ```ts
-import t, { type T } from 'tyrun'
+import { t, type T } from 'tyrun'
 
 const User = t.object({
   id: t.number().integer(),

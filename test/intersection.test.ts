@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Expect } from './utils'
 
-import t, { constants, errors, type T } from '../src'
+import { constants, errors, t, type T } from '../src'
 
 const _schema = t.intersection([t.union([t.string(), t.number()]), t.union([t.string(), t.boolean()])])
 const _input: Expect<T.Input<typeof _schema>, string> = null as any

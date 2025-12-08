@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Expect } from './utils'
 
-import t, { constants, errors, type T } from '../src'
+import { constants, errors, t, type T } from '../src'
 
 const _schema = t.symbol()
 const _input: Expect<T.Input<typeof _schema>, symbol> = null as any

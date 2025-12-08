@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Expect } from './utils'
 
-import t, { errors, type T } from '../src'
+import { errors, t, type T } from '../src'
 
 const _schema = t.any()
 const _input: Expect<T.Input<typeof _schema>, any> = null as any
