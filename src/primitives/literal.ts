@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Result, TyrunBaseConfig } from '../types'
-import type { TyrunLiteralConfig, TyrunLiteralParts, TyrunLiteralType } from './types'
+import type { Result, TyrunBaseConfig, TyrunLiteralConfig, TyrunLiteralParts, TyrunLiteralType } from '../types'
 
 export class TyrunLiteralSchema<T extends TyrunLiteralParts> extends TyrunBaseSchema<T, T, TyrunLiteralConfig> implements TyrunLiteralType<T> {
-  public readonly type: 'literal' = 'literal' as const
+  public override readonly type: 'literal' = 'literal' as const
 
   constructor(public readonly value: T, config: TyrunBaseConfig<TyrunLiteralConfig, T, T>) {
     super(config)

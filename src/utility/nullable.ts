@@ -1,10 +1,9 @@
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Input, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunNullableType } from './types'
+import type { Input, Output, Result, TyrunBaseConfig, TyrunBaseType, TyrunNullableType } from '../types'
 
 export class TyrunNullableSchema<T extends TyrunBaseType<any, any>> extends TyrunBaseSchema<Input<T> | null, Output<T> | null, {}> implements TyrunNullableType<T> {
-  readonly type: 'nullable' = 'nullable' as const
+  public override readonly type: 'nullable' = 'nullable' as const
 
   constructor(public readonly schema: T, config: TyrunBaseConfig<{}, Input<T> | null, Output<T> | null>) {
     super(config)

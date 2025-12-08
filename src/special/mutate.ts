@@ -1,10 +1,9 @@
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError, TyrunRuntimeError } from '../errors'
-import type { Input, Mutator, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunMutateType } from './types'
+import type { Input, Mutator, Output, Result, TyrunBaseConfig, TyrunBaseType, TyrunMutateType } from '../types'
 
 export class TyrunMutateSchema<From extends TyrunBaseType<any, any>, To extends TyrunBaseType<any, any>> extends TyrunBaseSchema<Input<From>, Output<To>, {}> implements TyrunMutateType<From, To> {
-  public readonly type: 'mutate' = 'mutate' as const
+  public override readonly type: 'mutate' = 'mutate' as const
 
   constructor(public readonly from: From, public readonly to: To, public readonly mutator: Mutator<Output<From>, Input<To>>, config: TyrunBaseConfig<{}, Input<From>, Output<To>>) {
     super(config)

@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { InputShape, Issue, OutputShape, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunObjectConfig } from './types'
+import type { InputShape, Issue, OutputShape, Result, TyrunBaseConfig, TyrunBaseType, TyrunObjectConfig } from '../types'
 
 export class TyrunObjectSchema<T extends Record<string, TyrunBaseType<any, any>>> extends TyrunBaseSchema<InputShape<T>, OutputShape<T>, TyrunObjectConfig> {
-  public readonly type: 'object' = 'object' as const
+  public override readonly type: 'object' = 'object' as const
 
   constructor(public readonly shape: T, config: TyrunBaseConfig<TyrunObjectConfig, InputShape<T>, OutputShape<T>>) {
     super(config)

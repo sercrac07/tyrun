@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Result, TyrunBaseConfig } from '../types'
-import type { TyrunEnumConfig, TyrunEnumParts, TyrunEnumType } from './types'
+import type { Result, TyrunBaseConfig, TyrunEnumConfig, TyrunEnumParts, TyrunEnumType } from '../types'
 
 export class TyrunEnumSchema<T extends TyrunEnumParts[]> extends TyrunBaseSchema<T[number], T[number], TyrunEnumConfig> implements TyrunEnumType<T> {
-  public readonly type: 'enum' = 'enum' as const
+  public override readonly type: 'enum' = 'enum' as const
 
   constructor(public readonly values: [...T], config: TyrunBaseConfig<TyrunEnumConfig, T[number], T[number]>) {
     super(config)

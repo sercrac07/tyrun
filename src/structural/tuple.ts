@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunTupleConfig, TyrunTupleType } from './types'
+import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType, TyrunTupleConfig, TyrunTupleType } from '../types'
 
 export class TyrunTupleSchema<T extends TyrunBaseType<any, any>[]> extends TyrunBaseSchema<{ [K in keyof T]: Input<T[K]> }, { [K in keyof T]: Output<T[K]> }, TyrunTupleConfig> implements TyrunTupleType<T> {
-  public readonly type: 'tuple' = 'tuple' as const
+  public override readonly type: 'tuple' = 'tuple' as const
 
   constructor(public readonly schema: [...T], config: TyrunBaseConfig<TyrunTupleConfig, { [K in keyof T]: Input<T[K]> }, { [K in keyof T]: Output<T[K]> }>) {
     super(config)

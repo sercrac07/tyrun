@@ -4,7 +4,7 @@ import { TyrunError } from '../errors'
 import type { ErrorConfig, Result, TyrunBaseConfig, TyrunDateConfig, TyrunDateType } from '../types'
 
 export class TyrunDateSchema extends TyrunBaseSchema<Date, Date, TyrunDateConfig> implements TyrunDateType {
-  public readonly type: 'date' = 'date' as const
+  public override readonly type: 'date' = 'date' as const
 
   constructor(config: TyrunBaseConfig<TyrunDateConfig, Date, Date>) {
     super(config)

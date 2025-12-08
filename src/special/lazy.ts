@@ -1,10 +1,9 @@
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Input, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunLazyType } from './types'
+import type { Input, Output, Result, TyrunBaseConfig, TyrunBaseType, TyrunLazyType } from '../types'
 
 export class TyrunLazySchema<T extends TyrunBaseType<any, any>> extends TyrunBaseSchema<Input<T>, Output<T>, {}> implements TyrunLazyType<T> {
-  readonly type: 'lazy' = 'lazy' as const
+  public override readonly type: 'lazy' = 'lazy' as const
 
   constructor(public readonly schema: () => T, config: TyrunBaseConfig<{}, Input<T>, Output<T>>) {
     super(config)

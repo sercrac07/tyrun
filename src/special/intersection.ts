@@ -1,10 +1,9 @@
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { InputIntersection, Issue, OutputIntersection, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunIntersectionType } from './types'
+import type { InputIntersection, Issue, OutputIntersection, Result, TyrunBaseConfig, TyrunBaseType, TyrunIntersectionType } from '../types'
 
 export class TyrunIntersectionSchema<T extends TyrunBaseType<any, any>[]> extends TyrunBaseSchema<InputIntersection<T>, OutputIntersection<T>, {}> implements TyrunIntersectionType<T> {
-  public readonly type: 'intersection' = 'intersection' as const
+  public override readonly type: 'intersection' = 'intersection' as const
 
   constructor(public readonly schema: [...T], config: TyrunBaseConfig<{}, InputIntersection<T>, OutputIntersection<T>>) {
     super(config)

@@ -1,10 +1,9 @@
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Input, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunOptionalType } from './types'
+import type { Input, Output, Result, TyrunBaseConfig, TyrunBaseType, TyrunOptionalType } from '../types'
 
 export class TyrunOptionalSchema<T extends TyrunBaseType<any, any>> extends TyrunBaseSchema<Input<T> | undefined, Output<T> | undefined, {}> implements TyrunOptionalType<T> {
-  readonly type: 'optional' = 'optional' as const
+  public override readonly type: 'optional' = 'optional' as const
 
   constructor(public readonly schema: T, config: TyrunBaseConfig<{}, Input<T> | undefined, Output<T> | undefined>) {
     super(config)

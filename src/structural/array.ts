@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunArrayConfig, TyrunArrayType } from './types'
+import type { ErrorConfig, Input, Issue, Output, Result, TyrunArrayConfig, TyrunArrayType, TyrunBaseConfig, TyrunBaseType } from '../types'
 
 export class TyrunArraySchema<T extends TyrunBaseType<any, any>> extends TyrunBaseSchema<Input<T>[], Output<T>[], TyrunArrayConfig> implements TyrunArrayType<T> {
-  readonly type: 'array' = 'array' as const
+  public override readonly type: 'array' = 'array' as const
 
   constructor(public readonly schema: T, config: TyrunBaseConfig<TyrunArrayConfig, Input<T>[], Output<T>[]>) {
     super(config)
@@ -90,17 +89,17 @@ export class TyrunArraySchema<T extends TyrunBaseType<any, any>> extends TyrunBa
     return new TyrunArraySchema(this.schema, this.__config)
   }
 
-  public nonEmpty(error?: string): this {
+  public nonEmpty(error?: string | ErrorConfig): this {
     const issue = this.buildIssue(CODES.ARRAY.NON_EMPTY, ERRORS.ARRAY.NON_EMPTY, [], error)
     this.__config.validators.push(input => (input.length > 0 ? null : issue))
     return this
   }
-  public min(length: number, error?: string): this {
+  public min(length: number, error?: string | ErrorConfig): this {
     const issue = this.buildIssue(CODES.ARRAY.MIN, ERRORS.ARRAY.MIN(length), [], error)
     this.__config.validators.push(input => (input.length >= length ? null : issue))
     return this
   }
-  public max(length: number, error?: string): this {
+  public max(length: number, error?: string | ErrorConfig): this {
     const issue = this.buildIssue(CODES.ARRAY.MAX, ERRORS.ARRAY.MAX(length), [], error)
     this.__config.validators.push(input => (input.length <= length ? null : issue))
     return this

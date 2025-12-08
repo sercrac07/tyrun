@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Result, TyrunBaseConfig } from '../types'
-import type { TyrunBooleanConfig, TyrunBooleanType } from './types'
+import type { Result, TyrunBaseConfig, TyrunBooleanConfig, TyrunBooleanType } from '../types'
 
 export class TyrunBooleanSchema extends TyrunBaseSchema<boolean, boolean, TyrunBooleanConfig> implements TyrunBooleanType {
-  public readonly type: 'boolean' = 'boolean' as const
+  public override readonly type: 'boolean' = 'boolean' as const
 
   constructor(config: TyrunBaseConfig<TyrunBooleanConfig, boolean, boolean>) {
     super(config)

@@ -1,11 +1,10 @@
 import { CODES, ERRORS, REGEXES } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { ErrorConfig, Result, TyrunBaseConfig } from '../types'
-import type { TyrunStringConfig, TyrunStringType } from './types'
+import type { ErrorConfig, Result, TyrunBaseConfig, TyrunStringConfig, TyrunStringType } from '../types'
 
 export class TyrunStringSchema extends TyrunBaseSchema<string, string, TyrunStringConfig> implements TyrunStringType {
-  public readonly type: 'string' = 'string' as const
+  public override readonly type: 'string' = 'string' as const
 
   constructor(config: TyrunBaseConfig<TyrunStringConfig, string, string>) {
     super(config)

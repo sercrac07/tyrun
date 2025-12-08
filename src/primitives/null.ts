@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Result, TyrunBaseConfig } from '../types'
-import type { TyrunNullConfig, TyrunNullType } from './types'
+import type { Result, TyrunBaseConfig, TyrunNullConfig, TyrunNullType } from '../types'
 
 export class TyrunNullSchema extends TyrunBaseSchema<null, null, TyrunNullConfig> implements TyrunNullType {
-  public readonly type: 'null' = 'null' as const
+  public override readonly type: 'null' = 'null' as const
 
   constructor(config: TyrunBaseConfig<TyrunNullConfig, null, null>) {
     super(config)

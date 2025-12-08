@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { ErrorConfig, Result, TyrunBaseConfig } from '../types'
-import type { TyrunBigintConfig, TyrunBigintType } from './types'
+import type { ErrorConfig, Result, TyrunBaseConfig, TyrunBigintConfig, TyrunBigintType } from '../types'
 
 export class TyrunBigintSchema extends TyrunBaseSchema<bigint, bigint, TyrunBigintConfig> implements TyrunBigintType {
-  public readonly type: 'bigint' = 'bigint' as const
+  public override readonly type: 'bigint' = 'bigint' as const
 
   constructor(config: TyrunBaseConfig<TyrunBigintConfig, bigint, bigint>) {
     super(config)

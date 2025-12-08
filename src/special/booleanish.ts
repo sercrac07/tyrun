@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import { Result, TyrunBaseConfig } from '../types'
-import type { TyrunBooleanishConfig, TyrunBooleanishType } from './types'
+import type { Result, TyrunBaseConfig, TyrunBooleanishConfig, TyrunBooleanishType } from '../types'
 
 export class TyrunBooleanishSchema extends TyrunBaseSchema<string, boolean, TyrunBooleanishConfig> implements TyrunBooleanishType {
-  public readonly type: 'booleanish' = 'booleanish' as const
+  public override readonly type: 'booleanish' = 'booleanish' as const
   public readonly trueValues: string[]
   public readonly falseValues: string[]
 

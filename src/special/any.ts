@@ -1,10 +1,9 @@
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Result, TyrunBaseConfig } from '../types'
-import type { TyrunAnyType } from './types'
+import type { Result, TyrunAnyType, TyrunBaseConfig } from '../types'
 
 export class TyrunAnySchema extends TyrunBaseSchema<any, any, {}> implements TyrunAnyType {
-  public readonly type: 'any' = 'any' as const
+  public override readonly type: 'any' = 'any' as const
 
   constructor(config: TyrunBaseConfig<{}, any, any>) {
     super(config)

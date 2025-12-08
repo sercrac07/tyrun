@@ -1,8 +1,7 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunRecordConfig, TyrunRecordType } from './types'
+import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType, TyrunRecordConfig, TyrunRecordType } from '../types'
 
 export class TyrunRecordSchema<Key extends TyrunBaseType<any, string>, Value extends TyrunBaseType<any, any>> extends TyrunBaseSchema<Record<Input<Key>, Input<Value>>, Record<Output<Key>, Output<Value>>, TyrunRecordConfig> implements TyrunRecordType<Key, Value> {
   public readonly type: 'record' = 'record' as const

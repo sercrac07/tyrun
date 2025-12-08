@@ -1,10 +1,9 @@
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType } from '../types'
-import type { TyrunUnionType } from './types'
+import type { Input, Issue, Output, Result, TyrunBaseConfig, TyrunBaseType, TyrunUnionType } from '../types'
 
 export class TyrunUnionSchema<T extends TyrunBaseType<any, any>[]> extends TyrunBaseSchema<Input<T[number]>, Output<T[number]>, {}> implements TyrunUnionType<T> {
-  public readonly type: 'union' = 'union' as const
+  public override readonly type: 'union' = 'union' as const
 
   constructor(public readonly schema: [...T], config: TyrunBaseConfig<{}, Input<T[number]>, Output<T[number]>>) {
     super(config)

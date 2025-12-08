@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Result, TyrunBaseConfig } from '../types'
-import type { TyrunUndefinedConfig, TyrunUndefinedType } from './types'
+import type { Result, TyrunBaseConfig, TyrunUndefinedConfig, TyrunUndefinedType } from '../types'
 
 export class TyrunUndefinedSchema extends TyrunBaseSchema<undefined, undefined, TyrunUndefinedConfig> implements TyrunUndefinedType {
-  public readonly type: 'undefined' = 'undefined' as const
+  public override readonly type: 'undefined' = 'undefined' as const
 
   constructor(config: TyrunBaseConfig<TyrunUndefinedConfig, undefined, undefined>) {
     super(config)

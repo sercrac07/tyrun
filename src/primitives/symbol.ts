@@ -1,11 +1,10 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunBaseSchema } from '../core/base'
 import { TyrunError } from '../errors'
-import type { Result, TyrunBaseConfig } from '../types'
-import type { TyrunSymbolConfig, TyrunSymbolType } from './types'
+import type { Result, TyrunBaseConfig, TyrunSymbolConfig, TyrunSymbolType } from '../types'
 
 export class TyrunSymbolSchema extends TyrunBaseSchema<symbol, symbol, TyrunSymbolConfig> implements TyrunSymbolType {
-  public readonly type: 'symbol' = 'symbol' as const
+  public override readonly type: 'symbol' = 'symbol' as const
 
   constructor(config: TyrunBaseConfig<TyrunSymbolConfig, symbol, symbol>) {
     super(config)

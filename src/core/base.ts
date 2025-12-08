@@ -1,7 +1,6 @@
 import { CODES, ERRORS } from '../constants'
 import { TyrunRuntimeError } from '../errors'
-import type { Default, Issue, MaybePromise, Preprocessor, Processor, Result, Validator } from '../types'
-import type { TyrunBaseConfig, TyrunBaseType } from './types'
+import type { Default, Issue, MaybePromise, Preprocessor, Processor, Result, TyrunBaseConfig, TyrunBaseType, Validator } from '../types'
 
 export abstract class TyrunBaseSchema<I, O, C extends Record<string, any>> implements TyrunBaseType<I, O> {
   public abstract readonly type: string
